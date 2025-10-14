@@ -1,8 +1,8 @@
 # Overview
 
-This is a React-based calculator application built with TypeScript and Vite. The project demonstrates a simple single-page application (SPA) that provides basic calculator functionality with a modern, responsive UI. The application is structured as a component-based system using the Dyad framework conventions.
+This is an event discovery platform built with React, TypeScript, and Vite. The app features a Tinder-style swipe interface where users can discover nightlife events, clubs, and entertainment venues. Users can swipe through events, like them, and admins can create new events through a dedicated dashboard. The application uses a dark theme throughout for an immersive nightlife experience.
 
-**Recent Migration (Oct 14, 2025)**: Successfully migrated from Vercel to Replit with proper server configuration (0.0.0.0:5000) for Replit environment compatibility.
+**Recent Rebuild (Oct 14, 2025)**: Completely rebuilt from a calculator app to an event discovery platform with swipe functionality, localStorage persistence, and admin capabilities.
 
 # User Preferences
 
@@ -10,107 +10,149 @@ Preferred communication style: Simple, everyday language.
 
 # System Architecture
 
+## Core Functionality
+- **Event Discovery**: Tinder-style swipeable cards showing nightlife events
+- **Like System**: Users can like events by swiping right or clicking the heart button
+- **Unlike Capability**: Users can unlike events from the liked events drawer
+- **Admin Dashboard**: Dedicated interface for creating and posting new events
+- **Dark Theme**: Consistent dark theme optimized for nightlife/club aesthetics
+
 ## Frontend Framework
 - **React 18+** with TypeScript for type safety and modern React features
-- **Vite** as the build tool and development server for fast HMM (Hot Module Replacement) and optimized production builds
-- **React Router** for client-side routing, with routes centralized in `src/App.tsx`
-- **Single Page Application (SPA)** architecture with a catch-all 404 route handler
+- **Vite** as the build tool and development server for fast HMR
+- **React Router** for client-side routing (/ for discovery, /admin for dashboard)
+- **Single Page Application (SPA)** architecture
+
+## Data Management
+- **Event Context**: React Context API for centralized event state management
+- **localStorage Persistence**: All events and liked status persist across sessions
+- **Zod Validation**: Type-safe event schema validation
+- **Mock Seed Data**: 6 pre-populated events with real Unsplash images for demo purposes
+
+## Event Data Model
+Events include:
+- ID (unique identifier)
+- Name
+- Description
+- Location
+- Price
+- Date & Time
+- Image URL
+- Liked status (boolean)
 
 ## Component Architecture
-- **Pages-based routing**: Main pages stored in `src/pages/` directory
-  - `Index.tsx`: Default landing page featuring the calculator
-  - `NotFound.tsx`: 404 error page with user-friendly messaging
-- **Component composition**: Reusable components in `src/components/` directory
-  - Custom components: `Calculator.tsx`, `made-with-dyad.tsx`
-  - UI library components: Extensive shadcn/ui component library in `src/components/ui/`
-- **Layout pattern**: Components are composed and integrated into pages, which are then rendered via the router
+- **Pages**:
+  - `EventDiscovery.tsx`: Main swipe interface with event cards
+  - `Admin.tsx`: Admin dashboard with event creation form
+- **Context**:
+  - `EventContext.tsx`: Global state for events with localStorage sync
+- **UI Components**: Extensive shadcn/ui component library
+  - Cards, Buttons, Forms, Sheets (drawers), Input fields, Date pickers
+
+## Swipe Functionality
+- **react-tinder-card**: Library providing smooth swipe gestures
+- **@react-spring/web**: Animation library (peer dependency)
+- **Swipe Directions**: Right to like, Left to skip
+- **Manual Controls**: Heart and X buttons for non-swipe interactions
+- **Card Stack**: Events displayed in reverse order, swiped off the stack
 
 ## Styling System
-- **Tailwind CSS** as the primary styling solution with extensive utility-first classes
-- **CSS Variables** for theming support (light/dark mode capability via `next-themes`)
-- **shadcn/ui design system**: Pre-built, accessible components with consistent styling
-- **Custom CSS**: Global styles in `src/globals.css` using CSS custom properties for theme colors
-- **Responsive design**: Mobile-first approach with breakpoint utilities
+- **Tailwind CSS** as the primary styling solution
+- **Dark Theme**: Gradient backgrounds (gray-900 to black), dark cards, and light text
+- **Responsive Design**: Mobile-first approach with max-width constraints
+- **Custom Styling**: Dark overlays on event images for text readability
 
 ## State Management
-- **React hooks** for local component state (useState, useEffect, etc.)
-- **TanStack Query (React Query)** installed for potential server state management and data fetching
-- **Context API**: Used by UI components (forms, toasts, etc.) for cross-component state sharing
+- **React Context API** for global event state
+- **localStorage** for persistence
+- **React hooks** for local component state
+- **Derived State**: Liked events computed from main events array
+
+## Form Handling
+- **react-hook-form**: Form state management and validation
+- **@hookform/resolvers**: Zod integration for schema validation
+- **Controlled Inputs**: All form fields controlled with validation feedback
 
 ## Type Safety
-- **TypeScript** with relaxed compiler options for developer convenience
-  - `strict: false` to allow gradual typing
-  - `noImplicitAny: false` for flexibility with untyped code
-  - Path aliases configured (`@/*` maps to `src/*`)
-- **Type definitions**: Vite environment types and component prop types
+- **TypeScript** with Zod schemas for runtime validation
+- **Type definitions**: Event types, form types, context types
+- **Path aliases**: `@/*` maps to `src/*`
 
 ## Code Quality
 - **ESLint** configured with TypeScript support
 - **React-specific linting**: React hooks rules and React Refresh plugin
-- **Unused variables allowed**: `@typescript-eslint/no-unused-vars: "off"` for development flexibility
+- **Type validation**: Zod schemas for event data
 
 ## Build and Development
 - **Development server**: Runs on `0.0.0.0:5000` for Replit network accessibility
+- **Allowed Hosts**: Configured to accept Replit's dynamic preview domains
 - **Package manager**: pnpm (lockfile: pnpm-lock.yaml)
 - **Workflow**: "Server" workflow runs `pnpm run dev` to start the Vite dev server
-- **Production builds**: Optimized via Vite with mode support (development/production)
-- **Module system**: ES Modules throughout with `.tsx` and `.ts` extensions
-- **Asset handling**: PostCSS with Tailwind and Autoprefixer for CSS processing
+- **Hot Module Replacement**: Instant updates during development
+- **Production builds**: Optimized via Vite with tree-shaking and code splitting
 
-## Deployment
-- **Vercel-ready**: Configuration in `vercel.json` with SPA fallback routing
-- **Static hosting compatible**: Built files can be served from any static host
-- **SEO considerations**: Basic robots.txt configuration for search engine indexing
+## Routing Structure
+- `/` - Event Discovery page (main app interface)
+- `/admin` - Admin Dashboard (event creation)
+- Navigation via React Router with Link components
 
-## Project Conventions
-- **File organization**: Strict separation of pages, components, utilities, and hooks
-- **Import aliases**: `@/` prefix for clean imports from src directory
-- **Component updates**: New components must be imported and used in pages to be visible
-- **Router management**: All routes defined in `src/App.tsx` for centralized navigation control
+## localStorage Schema
+- **events**: Array of all events with liked status
+- **Automatic Sync**: Updates on every event change
+- **Initial Load**: Seeds with mock data if empty
 
 # External Dependencies
 
+## Core Libraries
+- **react-tinder-card**: Tinder-style swipe card component
+- **@react-spring/web**: Spring-based animation library
+- **react-router-dom**: Client-side routing
+- **zod**: Schema validation and type inference
+
 ## UI Component Library
-- **shadcn/ui**: Complete component library pre-installed with all Radix UI primitives
-  - Accordion, Alert, Avatar, Badge, Button, Calendar, Card, Carousel, Chart, Checkbox
-  - Collapsible, Command, Context Menu, Dialog, Drawer, Dropdown Menu, Form
-  - Hover Card, Input, Label, Menubar, Navigation Menu, Pagination, Popover
-  - Progress, Radio Group, Resizable, Scroll Area, Select, Separator, Sheet
-  - Sidebar, Skeleton, Slider, Switch, Table, Tabs, Textarea, Toast, Toggle, Tooltip
-- **Radix UI**: Headless UI primitives for accessibility and behavior
-- **lucide-react**: Icon library for consistent iconography
+- **shadcn/ui**: Complete component library with Radix UI primitives
+- **lucide-react**: Icon library (Heart, X, Calendar, MapPin, DollarSign, Menu)
 
 ## Form Handling
 - **react-hook-form**: Form state management and validation
-- **@hookform/resolvers**: Schema validation resolvers for forms
-- **Zod** (implied): Likely used for form schema validation
+- **@hookform/resolvers**: Schema validation resolvers
 
 ## Utility Libraries
-- **class-variance-authority (CVA)**: Component variant management
+- **date-fns**: Date formatting and manipulation
+- **tailwind-merge**: Intelligent Tailwind class merging
 - **clsx**: Conditional className composition
-- **tailwind-merge**: Intelligent Tailwind class merging to prevent conflicts
-- **date-fns**: Date manipulation and formatting utilities
-- **cmdk**: Command palette/menu component
-
-## UI Enhancement
-- **embla-carousel-react**: Carousel/slider functionality
-- **input-otp**: One-time password input components
-- **vaul**: Drawer component primitive
-- **sonner**: Toast notification system
-
-## Development Tools
-- **@dyad-sh/react-vite-component-tagger**: Dyad-specific Vite plugin for component tagging
-- **@vitejs/plugin-react-swc**: React plugin using SWC for fast compilation
-
-## State & Data
-- **@tanstack/react-query**: Server state management, caching, and data synchronization
+- **class-variance-authority**: Component variant management
 
 ## Theming
-- **next-themes**: Dark mode and theme switching support
+- **Tailwind CSS**: Utility-first CSS framework
+- **Dark mode**: Always enabled via className="dark" on root
 
-## Potential Future Integrations
-The application architecture supports adding:
-- Database integration (Drizzle ORM mentioned in guidelines, though not currently implemented)
-- API routes and backend services
-- Authentication systems
-- External API integrations
+## Development Tools
+- **@dyad-sh/react-vite-component-tagger**: Dyad-specific Vite plugin
+- **@vitejs/plugin-react-swc**: React plugin using SWC for fast compilation
+
+# Feature Roadmap
+
+## Current Features (Implemented)
+✅ Event discovery with swipe interface
+✅ Like/unlike events functionality
+✅ Liked events drawer
+✅ Admin dashboard for creating events
+✅ localStorage persistence
+✅ Dark theme
+✅ Mock seed events
+✅ Responsive design
+
+## Future Enhancements (Not Implemented)
+- User authentication and profiles
+- Backend API integration
+- Database storage (PostgreSQL)
+- Real-time event updates
+- Event categories/filtering
+- Search functionality
+- Social sharing
+- Event check-ins
+- User reviews and ratings
+- Push notifications
+- Map integration for venue locations
+- Ticket purchasing integration
