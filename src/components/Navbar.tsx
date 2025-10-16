@@ -4,10 +4,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Heart, Search, Filter, Calendar, MapPin, DollarSign } from "lucide-react";
 import { useEvents } from "@/contexts/EventContext";
 import { format } from "date-fns";
+import { LocationDialog } from "@/components/LocationDialog";
 
 export const Navbar = () => {
-  const { likedEvents, toggleLike, filters, setFilters } = useEvents();
+  const { likedEvents, toggleLike, filters, setFilters, selectedCity, setSelectedCity } = useEvents();
   const [activeTab, setActiveTab] = useState<'all' | 'bar' | 'nightlife' | 'restaurant'>('all');
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
 
   const handleTabChange = (tab: 'all' | 'bar' | 'nightlife' | 'restaurant') => {
     setActiveTab(tab);
@@ -101,6 +103,15 @@ export const Navbar = () => {
               </SheetContent>
             </Sheet>
 
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setLocationDialogOpen(true)}
+              className={selectedCity ? "border-blue-500 text-blue-500" : ""}
+            >
+              <MapPin className="w-4 h-4" />
+            </Button>
+
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -171,6 +182,13 @@ export const Navbar = () => {
           </div>
         </div>
       </div>
+
+      <LocationDialog
+        open={locationDialogOpen}
+        onOpenChange={setLocationDialogOpen}
+        onLocationSelect={setSelectedCity}
+        currentLocation={selectedCity}
+      />
     </nav>
   );
 };
