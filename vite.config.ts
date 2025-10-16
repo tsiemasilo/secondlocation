@@ -15,4 +15,8 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    'import.meta.env.VITE_DATABASE_URL': JSON.stringify(process.env.DATABASE_URL),
+    'import.meta.env.VITE_NETLIFY_DATABASE_URL': JSON.stringify(process.env.NETLIFY_DATABASE_URL),
+  },
 }));
