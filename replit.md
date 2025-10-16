@@ -4,6 +4,8 @@ This is an event discovery platform built with React, TypeScript, and Vite. The 
 
 **Recent Rebuild (Oct 14, 2025)**: Completely rebuilt from a calculator app to an event discovery platform with swipe functionality, localStorage persistence, and admin capabilities.
 
+**Latest Update (Oct 16, 2025)**: Integrated Ticketmaster API for real live events and changed currency from USD to South African Rands (ZAR).
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -25,27 +27,31 @@ Preferred communication style: Simple, everyday language.
 
 ## Data Management
 - **Event Context**: React Context API for centralized event state management
-- **localStorage Persistence**: All events and liked status persist across sessions
+- **Ticketmaster API**: Real-time event data from Ticketmaster Discovery API (5,000 free calls/day)
+- **localStorage Persistence**: Liked events persist across sessions using event IDs
 - **Zod Validation**: Type-safe event schema validation
-- **Mock Seed Data**: 6 pre-populated events with real Unsplash images for demo purposes
+- **Currency Handling**: Automatic USD to ZAR conversion (18.5 rate), with currency detection
+- **Fallback Data**: Mock events used if API fails to load
 
 ## Event Data Model
 Events include:
-- ID (unique identifier)
+- ID (unique identifier from Ticketmaster)
 - Name
 - Description
-- Location
-- Price
-- Date & Time
-- Image URL
-- Liked status (boolean)
+- Location (venue name, city, state/province)
+- Price (displayed in South African Rands - ZAR)
+- Date & Time (ISO 8601 format)
+- Image URL (from Ticketmaster event images)
+- Liked status (boolean, persisted in localStorage)
 
 ## Component Architecture
 - **Pages**:
-  - `EventDiscovery.tsx`: Main swipe interface with event cards
+  - `EventDiscovery.tsx`: Main swipe interface with event cards and loading states
   - `Admin.tsx`: Admin dashboard with event creation form
+- **Services**:
+  - `ticketmaster.ts`: API integration service for fetching live events
 - **Context**:
-  - `EventContext.tsx`: Global state for events with localStorage sync
+  - `EventContext.tsx`: Global state for events with API integration and localStorage sync
 - **UI Components**: Extensive shadcn/ui component library
   - Cards, Buttons, Forms, Sheets (drawers), Input fields, Date pickers
 
@@ -97,9 +103,9 @@ Events include:
 - Navigation via React Router with Link components
 
 ## localStorage Schema
-- **events**: Array of all events with liked status
-- **Automatic Sync**: Updates on every event change
-- **Initial Load**: Seeds with mock data if empty
+- **event_discovery_liked**: Set of liked event IDs (persists user preferences)
+- **Automatic Sync**: Updates on every like/unlike action
+- **Initial Load**: Fetches live events from Ticketmaster API on app start
 
 # External Dependencies
 
@@ -108,6 +114,12 @@ Events include:
 - **@react-spring/web**: Spring-based animation library
 - **react-router-dom**: Client-side routing
 - **zod**: Schema validation and type inference
+
+## External APIs
+- **Ticketmaster Discovery API**: Live event data from South Africa and globally
+  - Free tier: 5,000 API calls/day, 5 requests/second
+  - Returns events with pricing, venue info, dates, and images
+  - API key stored in TICKETMASTER_API_KEY environment variable
 
 ## UI Component Library
 - **shadcn/ui**: Complete component library with Radix UI primitives
@@ -138,9 +150,13 @@ Events include:
 ✅ Like/unlike events functionality
 ✅ Liked events drawer
 ✅ Admin dashboard for creating events
-✅ localStorage persistence
+✅ localStorage persistence (liked events only)
 ✅ Dark theme
-✅ Mock seed events
+✅ **Real live events from Ticketmaster API**
+✅ **Prices displayed in South African Rands (ZAR)**
+✅ **Currency conversion (USD to ZAR) with detection**
+✅ Loading states for API calls
+✅ Fallback to mock data if API fails
 ✅ Responsive design
 
 ## Future Enhancements (Not Implemented)
