@@ -118,39 +118,43 @@ export const Navbar = () => {
         </div>
 
         <div className="relative">
-          <div className="flex items-center bg-gray-800/50 rounded-lg p-1 relative">
-            <button
-              onClick={() => handleTabChange('all')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-300 relative z-10 ${
-                activeTab === 'all' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              All Events
-            </button>
-            <button
-              onClick={() => handleTabChange('music')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-300 relative z-10 ${
-                activeTab === 'music' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              Music
-            </button>
-            <button
-              onClick={() => handleTabChange('nightlife')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-300 relative z-10 ${
-                activeTab === 'nightlife' ? 'text-white' : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              Nightlife
-            </button>
-            
-            <div
-              className="absolute top-1 bottom-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-md transition-all duration-500 ease-out"
-              style={{
-                left: activeTab === 'all' ? '0.25rem' : activeTab === 'music' ? 'calc(33.333% + 0.125rem)' : 'calc(66.666% + 0rem)',
-                width: 'calc(33.333% - 0.25rem)',
-              }}
+          <div className="navbar-wrap">
+            <input 
+              defaultChecked 
+              type="radio" 
+              id="rd-1" 
+              name="radio" 
+              className="rd-1" 
+              onChange={() => handleTabChange('all')}
             />
+            <label htmlFor="rd-1" className="navbar-label" style={{ zIndex: 0 }}>
+              <span>All Events</span>
+            </label>
+            
+            <input 
+              type="radio" 
+              id="rd-2" 
+              name="radio" 
+              className="rd-2" 
+              onChange={() => handleTabChange('music')}
+            />
+            <label htmlFor="rd-2" className="navbar-label" style={{ zIndex: 1 }}>
+              <span>Music</span>
+            </label>
+            
+            <input 
+              type="radio" 
+              id="rd-3" 
+              name="radio" 
+              className="rd-3" 
+              onChange={() => handleTabChange('nightlife')}
+            />
+            <label htmlFor="rd-3" className="navbar-label" style={{ zIndex: 2 }}>
+              <span>Nightlife</span>
+            </label>
+            
+            <div className="navbar-bar" />
+            <div className="navbar-slidebar" />
           </div>
         </div>
       </div>
