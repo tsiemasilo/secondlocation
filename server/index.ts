@@ -1,6 +1,7 @@
 import express from 'express';
 import * as cheerio from 'cheerio';
 import { Client } from '@googlemaps/google-maps-services-js';
+import * as storage from './storage';
 
 const app = express();
 const PORT = 3000;
@@ -127,6 +128,60 @@ app.get('/api/google-places', async (req, res) => {
     res.json({ places: uniquePlaces });
   } catch (error) {
     console.error('Google Places API error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/liked-events', async (req, res) => {
+  try {
+    const sessionId = req.headers['x-session-id'] as string;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID required' });
+    }
+
+    const likedEvents = await storage.getLikedEventsBySession(sessionId);
+    res.json(likedEvents);
+  } catch (error) {
+    console.error('Error fetching liked events:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/liked-events', async (req, res) => {
+  try {
+    const sessionId = req.headers['x-session-id'] as string;
+    const { eventId, eventData } = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID required' });
+    }
+
+    if (!eventId || !eventData) {
+      return res.status(400).json({ error: 'Event ID and data required' });
+    }
+
+    const result = await storage.addLikedEvent(sessionId, eventId, eventData);
+    res.json(result[0]);
+  } catch (error) {
+    console.error('Error adding liked event:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/liked-events/:eventId', async (req, res) => {
+  try {
+    const sessionId = req.headers['x-session-id'] as string;
+    const { eventId } = req.params;
+    
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID required' });
+    }
+
+    await storage.removeLikedEvent(sessionId, eventId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error removing liked event:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
