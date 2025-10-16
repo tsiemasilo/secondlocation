@@ -10,6 +10,11 @@ This is an event discovery platform built with React, TypeScript, and Vite. The 
 - Added PostgreSQL database integration with Drizzle ORM
 - Implemented Netlify serverless functions for database API
 - Liked events now persist in PostgreSQL (dev and production databases)
+- **Comprehensive Filtering System**: Filter by category, date range, price range, location radius, and popularity
+- **Smart Search**: Autocomplete search with suggestions for events, categories, and locations
+- **Advanced Sorting**: Sort by date (upcoming/latest), price (low/high), popularity, and distance
+- **Price Accuracy Fix**: Updated USD to ZAR exchange rate from 18.5 to 17.32 (current rate)
+- **Realistic Venue Pricing**: Added estimated cover charges for nightclubs (R150), bars (R50), based on ratings
 
 # User Preferences
 
@@ -23,6 +28,9 @@ Preferred communication style: Simple, everyday language.
 - **Unlike Capability**: Users can unlike events from the liked events drawer
 - **Admin Dashboard**: Dedicated interface for creating and posting new events
 - **Dark Theme**: Consistent dark theme optimized for nightlife/club aesthetics
+- **Advanced Filtering**: Multi-criteria filtering by category, price, date, location, and rating
+- **Smart Search**: Autocomplete search bar with real-time suggestions
+- **Flexible Sorting**: Multiple sort options including date, price, popularity, and distance
 
 ## Frontend Framework
 - **React 18+** with TypeScript for type safety and modern React features
@@ -39,7 +47,7 @@ Preferred communication style: Simple, everyday language.
 - **Session Management**: Unique session IDs for multi-user support
 - **localStorage Fallback**: Graceful fallback to localStorage when database API unavailable
 - **Zod Validation**: Type-safe event schema validation
-- **Currency Handling**: Automatic USD to ZAR conversion (18.5 rate), with currency detection
+- **Currency Handling**: Automatic USD to ZAR conversion (17.32 rate - current exchange rate), with currency detection
 - **Fallback Data**: Mock events used if API fails to load
 
 ## Event Data Model
@@ -52,17 +60,26 @@ Events include:
 - Date & Time (ISO 8601 format)
 - Image URL (from Ticketmaster event images)
 - Liked status (boolean, persisted in localStorage)
+- Category (music, nightclub, bar, restaurant, sports, comedy, theater, festival, event)
+- Coordinates (lat/lng for distance-based filtering and sorting)
+- Popularity (rating/popularity score for sorting and filtering)
 
 ## Component Architecture
 - **Pages**:
-  - `EventDiscovery.tsx`: Main swipe interface with event cards and loading states
+  - `EventDiscovery.tsx`: Main swipe interface with event cards, search, filters, sorting, and loading states
   - `Admin.tsx`: Admin dashboard with event creation form
 - **Services**:
-  - `ticketmaster.ts`: API integration service for fetching live events
+  - `ticketmaster.ts`: API integration service for fetching live events with category detection
+  - `googlePlaces.ts`: Venue data with realistic pricing based on category and ratings
+  - Other API services: eventbrite, foursquare, yelp, computicket
 - **Context**:
-  - `EventContext.tsx`: Global state for events with API integration and localStorage sync
+  - `EventContext.tsx`: Enhanced global state with filtering, search, and sorting logic
+- **Filter & Search Components**:
+  - `FilterBar.tsx`: Comprehensive filter controls (category, price, date, radius, rating)
+  - `SearchBar.tsx`: Smart search with autocomplete suggestions
+  - `SortControls.tsx`: Sorting dropdown with multiple options
 - **UI Components**: Extensive shadcn/ui component library
-  - Cards, Buttons, Forms, Sheets (drawers), Input fields, Date pickers
+  - Cards, Buttons, Forms, Sheets (drawers), Input fields, Date pickers, Sliders, Checkboxes, Popovers
 
 ## Swipe Functionality
 - **react-tinder-card**: Library providing smooth swipe gestures
@@ -165,18 +182,19 @@ Events include:
 ✅ Dark theme
 ✅ **Real live events from Ticketmaster API**
 ✅ **Prices displayed in South African Rands (ZAR)**
-✅ **Currency conversion (USD to ZAR) with detection**
+✅ **Currency conversion (USD to ZAR) with accurate exchange rate (17.32)**
+✅ **Comprehensive filtering** (by category, price, date, location radius, popularity)
+✅ **Smart search** with autocomplete suggestions
+✅ **Advanced sorting** (by date, price, popularity, distance)
+✅ **Event categories** (music, nightclub, bar, restaurant, sports, comedy, theater, festival)
+✅ **Realistic venue pricing** based on category and ratings
 ✅ Loading states for API calls
 ✅ Fallback to mock data if API fails
 ✅ Responsive design
 
 ## Future Enhancements (Not Implemented)
 - User authentication and profiles
-- Backend API integration
-- Database storage (PostgreSQL)
 - Real-time event updates
-- Event categories/filtering
-- Search functionality
 - Social sharing
 - Event check-ins
 - User reviews and ratings
