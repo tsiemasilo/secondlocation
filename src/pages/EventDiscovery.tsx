@@ -12,6 +12,7 @@ const EventDiscovery = () => {
   const { events, toggleLike, likedEvents, isLoading } = useEvents();
   const [currentIndex, setCurrentIndex] = useState(events.length - 1);
   const [showHeart, setShowHeart] = useState<string | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
   const currentIndexRef = useRef(currentIndex);
   const lastTapRef = useRef<number>(0);
 
@@ -59,12 +60,15 @@ const EventDiscovery = () => {
     const timeSinceLastTap = now - lastTapRef.current;
     
     if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-      toggleLike(eventId);
+      if (isAnimating) return;
+      
+      setIsAnimating(true);
       setShowHeart(eventId);
       
-      setTimeout(() => {
+      setTimeout(async () => {
         setShowHeart(null);
-        swipe("right");
+        await swipe("right");
+        setIsAnimating(false);
       }, 800);
     }
     
