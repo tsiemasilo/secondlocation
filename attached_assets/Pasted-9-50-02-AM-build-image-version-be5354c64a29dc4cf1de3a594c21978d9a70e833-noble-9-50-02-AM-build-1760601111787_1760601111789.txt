@@ -1,0 +1,42 @@
+9:50:02 AM: build-image version: be5354c64a29dc4cf1de3a594c21978d9a70e833 (noble)
+9:50:02 AM: buildbot version: be5354c64a29dc4cf1de3a594c21978d9a70e833
+9:50:02 AM: Fetching cached dependencies
+9:50:02 AM: Starting to download cache of 358.6MB (Last modified: 2025-10-16 07:12:19 +0000 UTC)
+9:50:03 AM: Finished downloading cache in 1.022s
+9:50:03 AM: Starting to extract cache
+9:50:11 AM: Finished extracting cache in 7.458s
+9:50:11 AM: Finished fetching cache in 8.544s
+9:50:11 AM: Starting to prepare the repo for build
+9:50:11 AM: Preparing Git Reference refs/heads/main
+9:50:12 AM: Custom functions path detected. Proceeding with the specified path: 'netlify/functions'
+9:50:12 AM: Custom build command detected. Proceeding with the specified command: 'pnpm run build'
+9:50:12 AM: Starting to install dependencies
+9:50:13 AM: Started restoring cached python cache
+9:50:13 AM: Finished restoring cached python cache
+9:50:13 AM: Started restoring cached ruby cache
+9:50:13 AM: Finished restoring cached ruby cache
+9:50:13 AM: Started restoring cached go cache
+9:50:14 AM: Finished restoring cached go cache
+9:50:14 AM: Downloading and installing node v20.19.5...
+9:50:15 AM: Downloading https://nodejs.org/dist/v20.19.5/node-v20.19.5-linux-x64.tar.xz...
+9:50:15 AM: Computing checksum with sha256sum
+9:50:15 AM: Checksums matched!
+9:50:17 AM: Now using node v20.19.5 (npm v10.8.2)
+9:50:17 AM: Enabling Node.js Corepack
+9:50:17 AM: Started restoring cached build plugins
+9:50:17 AM: Finished restoring cached build plugins
+9:50:17 AM: Started restoring cached corepack dependencies
+9:50:17 AM: Finished restoring cached corepack dependencies
+9:50:17 AM: Started restoring cached pnpm cache
+9:50:17 AM: Finished restoring cached pnpm cache
+9:50:17 AM: No pnpm workspaces detected
+9:50:17 AM: Started restoring cached node modules
+9:50:17 AM: Finished restoring cached node modules
+9:50:17 AM: Installing npm packages using pnpm version 10.18.2
+9:50:18 AM:  ERR_PNPM_OUTDATED_LOCKFILE  Cannot install with "frozen-lockfile" because pnpm-lock.yaml is not up to date with <ROOT>/package.json
+9:50:18 AM: Note that in CI environments this setting is true by default. If you still need to run install in such cases, use "pnpm install --no-frozen-lockfile"
+9:50:18 AM:   Failure reason:
+9:50:18 AM:   specifiers in the lockfile don't match specifiers in package.json:
+* 5 dependencies were added: netlify-cli@^23.9.1, @netlify/functions@^5.0.0, drizzle-kit@^0.31.5, drizzle-orm@^0.44.6, postgres@^3.4.7
+9:50:18 AM: Error during pnpm install
+9:50:18 AM: Failing build: Failed to install dependencies
