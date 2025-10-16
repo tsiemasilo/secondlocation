@@ -160,7 +160,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  z-index: 10;
+  z-index: 100;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -169,6 +169,8 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+  position: relative;
+  z-index: 100;
 }
 
 .navbar-wrap input[class*="rd-"]:checked + label {
