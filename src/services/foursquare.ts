@@ -126,25 +126,26 @@ export async function searchNightlifeVenues(params: {
 
 export async function fetchSouthAfricanNightlifeVenues(): Promise<Event[]> {
   try {
-    const cities = [
-      { name: "Cape Town, South Africa", lat: -33.9249, lng: 18.4241 },
-      { name: "Johannesburg, South Africa", lat: -26.2041, lng: 28.0473 },
-      { name: "Durban, South Africa", lat: -29.8587, lng: 31.0218 },
-    ];
+    const API_BASE = import.meta.env.PROD ? '/.netlify/functions' : '/api';
+    const url = `${API_BASE}/foursquare-venues`;
 
-    const allVenues: Event[] = [];
+    const response = await fetch(url);
 
-    for (const city of cities) {
-      const venues = await searchNightlifeVenues({
-        latitude: city.lat,
-        longitude: city.lng,
-        limit: 10,
-      });
-      allVenues.push(...venues);
+    if (!response.ok) {
+      console.log("Foursquare API not available");
+      return [];
     }
 
+    const data: FoursquareResponse = await response.json();
+
+    if (!data.results || data.results.length === 0) {
+      console.log("No Foursquare venues found");
+      return [];
+    }
+
+    const venues = data.results.map(transformFoursquareVenue);
     const uniqueVenues = Array.from(
-      new Map(allVenues.map(venue => [venue.name, venue])).values()
+      new Map(venues.map(venue => [venue.name, venue])).values()
     );
 
     console.log(`Found ${uniqueVenues.length} unique nightlife venues from Foursquare`);

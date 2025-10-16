@@ -115,24 +115,26 @@ export async function searchYelpEvents(params: {
 
 export async function fetchSouthAfricanYelpEvents(): Promise<Event[]> {
   try {
-    const cities = [
-      "Cape Town, South Africa",
-      "Johannesburg, South Africa",
-      "Durban, South Africa",
-    ];
+    const API_BASE = import.meta.env.PROD ? '/.netlify/functions' : '/api';
+    const url = `${API_BASE}/yelp-events`;
 
-    const allEvents: Event[] = [];
+    const response = await fetch(url);
 
-    for (const city of cities) {
-      const events = await searchYelpEvents({
-        location: city,
-        limit: 10,
-      });
-      allEvents.push(...events);
+    if (!response.ok) {
+      console.log("Yelp API not available");
+      return [];
     }
 
+    const data: YelpEventsResponse = await response.json();
+
+    if (!data.events || data.events.length === 0) {
+      console.log("No Yelp events found");
+      return [];
+    }
+
+    const events = data.events.map(transformYelpEvent);
     const uniqueEvents = Array.from(
-      new Map(allEvents.map(event => [event.name, event])).values()
+      new Map(events.map(event => [event.name, event])).values()
     );
 
     console.log(`Found ${uniqueEvents.length} unique events from Yelp`);
