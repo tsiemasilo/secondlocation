@@ -42,7 +42,7 @@ const EventDiscovery = () => {
     if (direction === "right") {
       toggleLike(eventId);
     }
-    updateCurrentIndex(currentIndex - 1);
+    updateCurrentIndex(index - 1);
   };
 
   const outOfFrame = (name: string, idx: number) => {
