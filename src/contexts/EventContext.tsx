@@ -4,6 +4,8 @@ import { fetchSouthAfricanEvents } from "@/services/ticketmaster";
 import { fetchSouthAfricanEventbriteEvents } from "@/services/eventbrite";
 import { fetchSouthAfricanNightlifeVenues } from "@/services/foursquare";
 import { fetchSouthAfricanYelpEvents } from "@/services/yelp";
+import { fetchComputicketEvents } from "@/services/computicket";
+import { fetchGooglePlaces } from "@/services/googlePlaces";
 import { getLikedEvents, addLikedEvent, removeLikedEvent } from "@/services/database";
 
 interface EventContextType {
@@ -103,19 +105,21 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       try {
         setIsLoading(true);
         
-        const [ticketmasterEvents, eventbriteEvents, foursquareVenues, yelpEvents] = await Promise.all([
+        const [ticketmasterEvents, eventbriteEvents, foursquareVenues, yelpEvents, computicketEvents, googlePlaces] = await Promise.all([
           fetchSouthAfricanEvents(),
           fetchSouthAfricanEventbriteEvents(),
           fetchSouthAfricanNightlifeVenues(),
           fetchSouthAfricanYelpEvents(),
+          fetchComputicketEvents(),
+          fetchGooglePlaces(),
         ]);
         
-        const combinedEvents = [...ticketmasterEvents, ...eventbriteEvents, ...foursquareVenues, ...yelpEvents];
+        const combinedEvents = [...ticketmasterEvents, ...eventbriteEvents, ...foursquareVenues, ...yelpEvents, ...computicketEvents, ...googlePlaces];
         const uniqueEvents = Array.from(
           new Map(combinedEvents.map(event => [event.name, event])).values()
         );
         
-        console.log(`Total unique events: ${uniqueEvents.length} (${ticketmasterEvents.length} from Ticketmaster, ${eventbriteEvents.length} from Eventbrite, ${foursquareVenues.length} from Foursquare, ${yelpEvents.length} from Yelp)`);
+        console.log(`Total unique events: ${uniqueEvents.length} (${ticketmasterEvents.length} from Ticketmaster, ${eventbriteEvents.length} from Eventbrite, ${foursquareVenues.length} from Foursquare, ${yelpEvents.length} from Yelp, ${computicketEvents.length} from Computicket, ${googlePlaces.length} from Google Places)`);
         
         const likedEventsFromDb = await getLikedEvents().catch((error) => {
           console.log("Database API not available, using localStorage fallback");
