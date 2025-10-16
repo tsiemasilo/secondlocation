@@ -129,18 +129,59 @@ export async function fetchSouthAfricanEvents(): Promise<Event[]> {
       size: 20,
     });
     
-    if (zaEvents.length > 0) {
-      console.log(`Found ${zaEvents.length} events in South Africa`);
-      return zaEvents;
+    const uniqueByNameAndDate = Array.from(
+      new Map(zaEvents.map(event => [`${event.name}|${event.dateTime}`, event])).values()
+    );
+    
+    const uniqueByName = Array.from(
+      new Map(uniqueByNameAndDate.map(event => [event.name, event])).values()
+    );
+    
+    console.log(`Found ${uniqueByName.length} unique events in South Africa (${zaEvents.length} total showtimes)`);
+    console.log("Unique events:", uniqueByName.map(e => e.name));
+    
+    if (uniqueByName.length > 0) {
+      if (uniqueByName.length < 10) {
+        console.log("Limited unique events in South Africa, fetching additional global events...");
+        const globalEvents = await fetchEvents({
+          countryCode: "US",
+          size: 50,
+        });
+        
+        console.log(`Fetched ${globalEvents.length} global events`);
+        
+        const uniqueGlobalByNameAndDate = Array.from(
+          new Map(globalEvents.map(event => [`${event.name}|${event.dateTime}`, event])).values()
+        );
+        
+        const uniqueGlobalByName = Array.from(
+          new Map(uniqueGlobalByNameAndDate.map(event => [event.name, event])).values()
+        );
+        
+        console.log(`${uniqueGlobalByName.length} unique global events`);
+        
+        const combinedEvents = [...uniqueByName, ...uniqueGlobalByName];
+        const allUniqueEvents = Array.from(
+          new Map(combinedEvents.map(event => [event.name, event])).values()
+        );
+        
+        console.log(`Returning ${allUniqueEvents.length} total unique events (${uniqueByName.length} from ZA, ${allUniqueEvents.length - uniqueByName.length} new from global)`);
+        return allUniqueEvents.slice(0, 20);
+      }
+      
+      return uniqueByName;
     }
     
     console.log("No events found in South Africa, fetching global events...");
     const globalEvents = await fetchEvents({
       size: 20,
     });
+    const uniqueGlobalEvents = Array.from(
+      new Map(globalEvents.map(event => [event.name, event])).values()
+    );
     
-    console.log(`Found ${globalEvents.length} global events`);
-    return globalEvents;
+    console.log(`Found ${uniqueGlobalEvents.length} unique global events`);
+    return uniqueGlobalEvents;
   } catch (error) {
     console.error("Error fetching events:", error);
     throw error;
