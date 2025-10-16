@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Event, CreateEventInput } from "@/types/event";
 import { fetchSouthAfricanEvents } from "@/services/ticketmaster";
+import { fetchSouthAfricanEventbriteEvents } from "@/services/eventbrite";
 import { getLikedEvents, addLikedEvent, removeLikedEvent } from "@/services/database";
 
 interface EventContextType {
@@ -100,7 +101,17 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       try {
         setIsLoading(true);
         
-        const fetchedEvents = await fetchSouthAfricanEvents();
+        const [ticketmasterEvents, eventbriteEvents] = await Promise.all([
+          fetchSouthAfricanEvents(),
+          fetchSouthAfricanEventbriteEvents(),
+        ]);
+        
+        const combinedEvents = [...ticketmasterEvents, ...eventbriteEvents];
+        const uniqueEvents = Array.from(
+          new Map(combinedEvents.map(event => [event.name, event])).values()
+        );
+        
+        console.log(`Total unique events: ${uniqueEvents.length} (${ticketmasterEvents.length} from Ticketmaster, ${eventbriteEvents.length} from Eventbrite)`);
         
         const likedEventsFromDb = await getLikedEvents().catch((error) => {
           console.log("Database API not available, using localStorage fallback");
@@ -115,7 +126,7 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           setLikedEventIds(likedIds);
         }
         
-        const eventsWithLikedStatus = fetchedEvents.map(event => ({
+        const eventsWithLikedStatus = uniqueEvents.map(event => ({
           ...event,
           liked: likedIds.has(event.id),
         }));
