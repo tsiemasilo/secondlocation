@@ -9,6 +9,12 @@ export const eventSchema = z.object({
   dateTime: z.string().min(1, "Date and time is required"),
   imageUrl: z.string().url("Must be a valid URL"),
   liked: z.boolean().default(false),
+  category: z.string().optional(),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
+  popularity: z.number().optional(),
 });
 
 export type Event = z.infer<typeof eventSchema>;

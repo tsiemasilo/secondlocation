@@ -28,6 +28,10 @@ interface TicketmasterEvent {
       city?: { name: string };
       state?: { name: string };
       country?: { name: string };
+      location?: {
+        latitude: string;
+        longitude: string;
+      };
     }>;
   };
 }
@@ -44,10 +48,23 @@ interface TicketmasterResponse {
   };
 }
 
-const USD_TO_ZAR_RATE = 18.5;
+const USD_TO_ZAR_RATE = 17.32;
 
 function convertToZAR(usdPrice: number): number {
   return Math.round(usdPrice * USD_TO_ZAR_RATE);
+}
+
+function determineCategory(tmEvent: TicketmasterEvent): string {
+  const name = tmEvent.name.toLowerCase();
+  const info = (tmEvent.info || tmEvent.description || '').toLowerCase();
+  
+  if (name.includes('concert') || name.includes('music') || info.includes('music')) return 'music';
+  if (name.includes('comedy') || info.includes('comedy')) return 'comedy';
+  if (name.includes('sport') || name.includes('game') || info.includes('sport')) return 'sports';
+  if (name.includes('theater') || name.includes('theatre') || info.includes('theater')) return 'theater';
+  if (name.includes('festival')) return 'festival';
+  
+  return 'event';
 }
 
 function transformTicketmasterEvent(tmEvent: TicketmasterEvent): Event {
@@ -79,6 +96,12 @@ function transformTicketmasterEvent(tmEvent: TicketmasterEvent): Event {
     dateTime: dateTime,
     imageUrl: imageUrl,
     liked: false,
+    category: determineCategory(tmEvent),
+    coordinates: venue?.location ? {
+      lat: parseFloat(venue.location.latitude),
+      lng: parseFloat(venue.location.longitude)
+    } : undefined,
+    popularity: Math.random() * 5,
   };
 }
 
