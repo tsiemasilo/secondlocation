@@ -15,6 +15,8 @@ This is an event discovery platform built with React, TypeScript, and Vite. The 
 - **Advanced Sorting**: Sort by date (upcoming/latest), price (low/high), popularity, and distance
 - **Price Accuracy Fix**: Updated USD to ZAR exchange rate from 18.5 to 17.32 (current rate)
 - **Realistic Venue Pricing**: Added estimated cover charges for nightclubs (R150), bars (R50), based on ratings
+- **New Navbar Design**: Implemented fixed top navbar with "2nd Location" branding, sliding tab navigation (All Events, Music, Nightlife), and icon buttons for Search, Liked Events, and Filters
+- **Watermark Text**: Added "DISCOVER EVENTS" large text behind navbar with low opacity for visual depth
 
 # User Preferences
 
@@ -66,7 +68,7 @@ Events include:
 
 ## Component Architecture
 - **Pages**:
-  - `EventDiscovery.tsx`: Main swipe interface with event cards, search, filters, sorting, and loading states
+  - `EventDiscovery.tsx`: Main swipe interface with event cards and loading states
   - `Admin.tsx`: Admin dashboard with event creation form
 - **Services**:
   - `ticketmaster.ts`: API integration service for fetching live events with category detection
@@ -74,6 +76,8 @@ Events include:
   - Other API services: eventbrite, foursquare, yelp, computicket
 - **Context**:
   - `EventContext.tsx`: Enhanced global state with filtering, search, and sorting logic
+- **Navigation**:
+  - `Navbar.tsx`: Fixed top navbar with "2nd Location" branding, sliding tab navigation, and action buttons
 - **Filter & Search Components**:
   - `FilterBar.tsx`: Comprehensive filter controls (category, price, date, radius, rating)
   - `SearchBar.tsx`: Smart search with autocomplete suggestions
