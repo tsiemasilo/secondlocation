@@ -160,8 +160,10 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  z-index: 100;
+  z-index: 5;
   -webkit-tap-highlight-color: transparent;
+  mix-blend-mode: normal;
+  isolation: isolate;
 }
 
 .navbar-label span {
@@ -169,8 +171,6 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
-  position: relative;
-  z-index: 100;
 }
 
 .navbar-wrap input[class*="rd-"]:checked + label {
@@ -186,7 +186,7 @@
   transform-origin: 0 0 0;
   height: 100%;
   width: calc(33.333% - 0.5rem);
-  z-index: 1;
+  z-index: 0;
   transition: transform 0.5s cubic-bezier(0.33, 0.83, 0.99, 0.98);
   pointer-events: none;
 }
@@ -217,7 +217,7 @@
   border-radius: calc(var(--round) - var(--p-y));
   background: #b8b8b8;
   transform-origin: 0 0 0;
-  z-index: 1;
+  z-index: 0;
   transition: transform 0.5s cubic-bezier(0.33, 0.83, 0.99, 0.98);
   pointer-events: none;
 }
