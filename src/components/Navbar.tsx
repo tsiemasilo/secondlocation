@@ -7,16 +7,18 @@ import { format } from "date-fns";
 
 export const Navbar = () => {
   const { likedEvents, toggleLike, filters, setFilters } = useEvents();
-  const [activeTab, setActiveTab] = useState<'all' | 'music' | 'nightlife'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'bar' | 'nightlife' | 'restaurant'>('all');
 
-  const handleTabChange = (tab: 'all' | 'music' | 'nightlife') => {
+  const handleTabChange = (tab: 'all' | 'bar' | 'nightlife' | 'restaurant') => {
     setActiveTab(tab);
     if (tab === 'all') {
       setFilters({ ...filters, categories: [] });
-    } else if (tab === 'music') {
-      setFilters({ ...filters, categories: ['music', 'concert', 'event'] });
+    } else if (tab === 'bar') {
+      setFilters({ ...filters, categories: ['bar'] });
     } else if (tab === 'nightlife') {
-      setFilters({ ...filters, categories: ['night_club', 'nightlife', 'bar'] });
+      setFilters({ ...filters, categories: ['night_club', 'nightlife'] });
+    } else if (tab === 'restaurant') {
+      setFilters({ ...filters, categories: ['restaurant'] });
     }
   };
 
@@ -136,10 +138,10 @@ export const Navbar = () => {
               id="rd-2" 
               name="radio" 
               className="rd-2" 
-              onChange={() => handleTabChange('music')}
+              onChange={() => handleTabChange('bar')}
             />
             <label htmlFor="rd-2" className="navbar-label" style={{ zIndex: 1 }}>
-              <span>Music</span>
+              <span>Bar</span>
             </label>
             
             <input 
@@ -151,6 +153,17 @@ export const Navbar = () => {
             />
             <label htmlFor="rd-3" className="navbar-label" style={{ zIndex: 2 }}>
               <span>Nightlife</span>
+            </label>
+            
+            <input 
+              type="radio" 
+              id="rd-4" 
+              name="radio" 
+              className="rd-4" 
+              onChange={() => handleTabChange('restaurant')}
+            />
+            <label htmlFor="rd-4" className="navbar-label" style={{ zIndex: 3 }}>
+              <span>Restaurant</span>
             </label>
             
             <div className="navbar-bar" />

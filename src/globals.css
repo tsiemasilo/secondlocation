@@ -214,7 +214,7 @@
 .navbar-slidebar {
   position: absolute;
   height: calc(100% - (var(--p-y) * 4));
-  width: calc(33.333% - 0.5rem);
+  width: calc(25% - 0.5rem);
   border-radius: calc(var(--round) - var(--p-y));
   background: #b8b8b8;
   transform-origin: 0 0 0;
@@ -236,4 +236,9 @@
 .rd-3:checked ~ .navbar-bar,
 .rd-3:checked ~ .navbar-slidebar {
   transform: translateX(calc(200% + 0.25rem)) translateZ(0) scaleX(1);
+}
+
+.rd-4:checked ~ .navbar-bar,
+.rd-4:checked ~ .navbar-slidebar {
+  transform: translateX(calc(300% + 0.25rem)) translateZ(0) scaleX(1);
 }

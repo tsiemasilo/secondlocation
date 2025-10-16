@@ -87,35 +87,43 @@ app.get('/api/google-places', async (req, res) => {
       { name: 'Pretoria', location: { lat: -25.7479, lng: 28.2293 } },
     ];
 
+    const placeTypes = [
+      { type: 'night_club', category: 'night_club' },
+      { type: 'bar', category: 'bar' },
+      { type: 'restaurant', category: 'restaurant' },
+    ];
+
     const allPlaces: any[] = [];
 
     for (const city of cities) {
-      const searchResponse = await client.placesNearby({
-        params: {
-          location: city.location,
-          radius: 15000,
-          type: 'night_club',
-          key: apiKey,
-        },
-        timeout: 5000,
-      });
+      for (const placeType of placeTypes) {
+        const searchResponse = await client.placesNearby({
+          params: {
+            location: city.location,
+            radius: 15000,
+            type: placeType.type as any,
+            key: apiKey,
+          },
+          timeout: 5000,
+        });
 
-      if (searchResponse.data.results) {
-        console.log(`Found ${searchResponse.data.results.length} clubs in ${city.name}`);
-        
-        for (const place of searchResponse.data.results.slice(0, 10)) {
-          allPlaces.push({
-            id: `google-${place.place_id}`,
-            name: place.name || 'Unknown',
-            location: `${place.vicinity || city.name}, South Africa`,
-            address: place.vicinity || city.name,
-            rating: place.rating || 0,
-            totalRatings: place.user_ratings_total || 0,
-            placeId: place.place_id,
-            type: place.types?.[0] || 'night_club',
-            photoReference: place.photos?.[0]?.photo_reference || null,
-            source: 'Google Places',
-          });
+        if (searchResponse.data.results) {
+          console.log(`Found ${searchResponse.data.results.length} ${placeType.type}s in ${city.name}`);
+          
+          for (const place of searchResponse.data.results.slice(0, 5)) {
+            allPlaces.push({
+              id: `google-${place.place_id}`,
+              name: place.name || 'Unknown',
+              location: `${place.vicinity || city.name}, South Africa`,
+              address: place.vicinity || city.name,
+              rating: place.rating || 0,
+              totalRatings: place.user_ratings_total || 0,
+              placeId: place.place_id,
+              type: placeType.category,
+              photoReference: place.photos?.[0]?.photo_reference || null,
+              source: 'Google Places',
+            });
+          }
         }
       }
     }
@@ -124,7 +132,7 @@ app.get('/api/google-places', async (req, res) => {
       new Map(allPlaces.map(place => [place.placeId, place])).values()
     );
 
-    console.log(`Total clubs found: ${uniquePlaces.length}`);
+    console.log(`Total places found: ${uniquePlaces.length}`);
     res.json({ places: uniquePlaces });
   } catch (error) {
     console.error('Google Places API error:', error);

@@ -20,7 +20,7 @@ interface GooglePlacesResponse {
 function determineVenueCategory(type: string): string {
   const lowerType = type.toLowerCase();
   
-  if (lowerType.includes('night_club') || lowerType.includes('nightclub')) return 'nightclub';
+  if (lowerType.includes('night_club') || lowerType.includes('nightclub')) return 'night_club';
   if (lowerType.includes('bar')) return 'bar';
   if (lowerType.includes('restaurant')) return 'restaurant';
   if (lowerType.includes('cafe') || lowerType.includes('coffee')) return 'cafe';
@@ -30,7 +30,7 @@ function determineVenueCategory(type: string): string {
 
 function estimateCoverCharge(category: string, rating: number): number {
   const basePrice = {
-    'nightclub': 150,
+    'night_club': 150,
     'bar': 50,
     'restaurant': 0,
     'cafe': 0,
