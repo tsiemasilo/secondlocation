@@ -18,5 +18,6 @@ export default defineConfig(() => ({
   define: {
     'import.meta.env.VITE_DATABASE_URL': JSON.stringify(process.env.DATABASE_URL),
     'import.meta.env.VITE_NETLIFY_DATABASE_URL': JSON.stringify(process.env.NETLIFY_DATABASE_URL),
+    'import.meta.env.VITE_TICKETMASTER_API_KEY': JSON.stringify(process.env.VITE_TICKETMASTER_API_KEY),
   },
 }));
