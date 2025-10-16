@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Event, CreateEventInput } from "@/types/event";
 import { fetchSouthAfricanEvents } from "@/services/ticketmaster";
 import { fetchSouthAfricanEventbriteEvents } from "@/services/eventbrite";
+import { fetchSouthAfricanNightlifeVenues } from "@/services/foursquare";
+import { fetchSouthAfricanYelpEvents } from "@/services/yelp";
 import { getLikedEvents, addLikedEvent, removeLikedEvent } from "@/services/database";
 
 interface EventContextType {
@@ -101,17 +103,19 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       try {
         setIsLoading(true);
         
-        const [ticketmasterEvents, eventbriteEvents] = await Promise.all([
+        const [ticketmasterEvents, eventbriteEvents, foursquareVenues, yelpEvents] = await Promise.all([
           fetchSouthAfricanEvents(),
           fetchSouthAfricanEventbriteEvents(),
+          fetchSouthAfricanNightlifeVenues(),
+          fetchSouthAfricanYelpEvents(),
         ]);
         
-        const combinedEvents = [...ticketmasterEvents, ...eventbriteEvents];
+        const combinedEvents = [...ticketmasterEvents, ...eventbriteEvents, ...foursquareVenues, ...yelpEvents];
         const uniqueEvents = Array.from(
           new Map(combinedEvents.map(event => [event.name, event])).values()
         );
         
-        console.log(`Total unique events: ${uniqueEvents.length} (${ticketmasterEvents.length} from Ticketmaster, ${eventbriteEvents.length} from Eventbrite)`);
+        console.log(`Total unique events: ${uniqueEvents.length} (${ticketmasterEvents.length} from Ticketmaster, ${eventbriteEvents.length} from Eventbrite, ${foursquareVenues.length} from Foursquare, ${yelpEvents.length} from Yelp)`);
         
         const likedEventsFromDb = await getLikedEvents().catch((error) => {
           console.log("Database API not available, using localStorage fallback");
