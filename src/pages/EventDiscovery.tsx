@@ -13,6 +13,7 @@ const EventDiscovery = () => {
   const [currentIndex, setCurrentIndex] = useState(events.length - 1);
   const [showHeart, setShowHeart] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [alreadyRemoved, setAlreadyRemoved] = useState<string[]>([]);
   const currentIndexRef = useRef(currentIndex);
   const lastTapRef = useRef<number>(0);
 
@@ -39,6 +40,7 @@ const EventDiscovery = () => {
   const canSwipe = currentIndex >= 0;
 
   const swiped = (direction: string, eventId: string, index: number) => {
+    setAlreadyRemoved(prev => [...prev, eventId]);
     if (direction === "right") {
       toggleLike(eventId);
     }
@@ -163,17 +165,19 @@ const EventDiscovery = () => {
                 <p className="text-sm">Check your liked events or create new ones.</p>
               </div>
             ) : (
-              orderedEvents.map((event, index) => (
-                <TinderCard
-                  ref={childRefs[index]}
-                  className="absolute w-full max-w-md"
-                  key={event.id}
-                  onSwipe={(dir) => swiped(dir, event.id, index)}
-                  onCardLeftScreen={() => outOfFrame(event.name, index)}
-                  preventSwipe={["up", "down"]}
-                  swipeRequirementType="position"
-                  swipeThreshold={100}
-                >
+              orderedEvents
+                .filter(event => !alreadyRemoved.includes(event.id))
+                .map((event, index) => (
+                  <TinderCard
+                    ref={childRefs[index]}
+                    className="absolute w-full max-w-md"
+                    key={event.id}
+                    onSwipe={(dir) => swiped(dir, event.id, index)}
+                    onCardLeftScreen={() => outOfFrame(event.name, index)}
+                    preventSwipe={["up", "down"]}
+                    swipeRequirementType="position"
+                    swipeThreshold={100}
+                  >
                   <div
                     className="relative w-full h-[600px] bg-gray-800 rounded-2xl shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing"
                     style={{
@@ -209,7 +213,7 @@ const EventDiscovery = () => {
                     </div>
                   </div>
                 </TinderCard>
-              ))
+                ))
             )}
           </div>
         </div>
