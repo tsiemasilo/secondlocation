@@ -26,16 +26,12 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev:netlify"
+args = "npm run dev"
 waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5173
-externalPort = 5173
 
 [[ports]]
 localPort = 33551
@@ -52,6 +48,10 @@ externalPort = 3003
 [[ports]]
 localPort = 37961
 externalPort = 3001
+
+[[ports]]
+localPort = 40435
+externalPort = 5173
 
 [[ports]]
 localPort = 43449
