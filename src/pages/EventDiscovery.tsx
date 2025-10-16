@@ -16,7 +16,7 @@ const EventDiscovery = () => {
   const currentIndexRef = useRef(currentIndex);
   const lastTapRef = useRef<number>(0);
 
-  const orderedEvents = useMemo(() => [...events].reverse(), [events]);
+  const orderedEvents = useMemo(() => [...events].reverse(), [events.length, events.map(e => e.id).join(',')]);
 
   useEffect(() => {
     setCurrentIndex(orderedEvents.length - 1);
