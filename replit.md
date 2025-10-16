@@ -5,6 +5,11 @@ This is an event discovery platform built with React, TypeScript, and Vite. The 
 **Recent Rebuild (Oct 14, 2025)**: Completely rebuilt from a calculator app to an event discovery platform with swipe functionality, localStorage persistence, and admin capabilities.
 
 **Latest Update (Oct 16, 2025)**: 
+- **Location Filtering**: Added province and city selection dialog for filtering events by location
+  - Two-step selection flow: Province → City
+  - Comprehensive coverage of all 9 South African provinces with major cities
+  - MapPin icon button in navbar highlights when location is selected
+  - City-based filtering integrated with existing search and filter system
 - Integrated Ticketmaster API for real live events
 - Changed currency from USD to South African Rands (ZAR)
 - Added PostgreSQL database integration with Drizzle ORM
@@ -28,6 +33,7 @@ Preferred communication style: Simple, everyday language.
 - **Event Discovery**: Tinder-style swipeable cards showing nightlife events
 - **Like System**: Users can like events by swiping right or clicking the heart button
 - **Unlike Capability**: Users can unlike events from the liked events drawer
+- **Location Filtering**: Province and city selection to filter events by location
 - **Admin Dashboard**: Dedicated interface for creating and posting new events
 - **Dark Theme**: Consistent dark theme optimized for nightlife/club aesthetics
 - **Advanced Filtering**: Multi-criteria filtering by category, price, date, location, and rating
@@ -78,6 +84,9 @@ Events include:
   - `EventContext.tsx`: Enhanced global state with filtering, search, and sorting logic
 - **Navigation**:
   - `Navbar.tsx`: Fixed top navbar with "2nd Location" branding, sliding tab navigation, and action buttons
+- **Location Components**:
+  - `LocationDialog.tsx`: Two-step province and city selection dialog
+  - `locations.ts`: Comprehensive South African province and city data
 - **Filter & Search Components**:
   - `FilterBar.tsx`: Comprehensive filter controls (category, price, date, radius, rating)
   - `SearchBar.tsx`: Smart search with autocomplete suggestions
@@ -179,6 +188,7 @@ Events include:
 ✅ Event discovery with swipe interface
 ✅ Like/unlike events functionality
 ✅ Liked events drawer
+✅ **Location filtering** (province and city selection)
 ✅ Admin dashboard for creating events
 ✅ **PostgreSQL database persistence** (liked events stored per-session)
 ✅ **Netlify serverless functions** for database API
