@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, createRef } from "react";
+import { useState, useMemo, useRef, createRef, useEffect } from "react";
 import TinderCard from "react-tinder-card";
 import { useEvents } from "@/contexts/EventContext";
 import { Event } from "@/types/event";
@@ -9,9 +9,14 @@ import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
 const EventDiscovery = () => {
-  const { events, toggleLike, likedEvents } = useEvents();
+  const { events, toggleLike, likedEvents, isLoading } = useEvents();
   const [currentIndex, setCurrentIndex] = useState(events.length - 1);
   const currentIndexRef = useRef(currentIndex);
+
+  useEffect(() => {
+    setCurrentIndex(events.length - 1);
+    currentIndexRef.current = events.length - 1;
+  }, [events.length]);
 
   const childRefs = useMemo(
     () =>
@@ -115,7 +120,12 @@ const EventDiscovery = () => {
 
         <div className="flex flex-col items-center justify-center">
           <div className="relative w-full max-w-md h-[600px] flex items-center justify-center">
-            {events.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center text-gray-400">
+                <p className="text-xl mb-4">Loading events...</p>
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto"></div>
+              </div>
+            ) : events.length === 0 ? (
               <div className="text-center text-gray-400">
                 <p className="text-xl mb-4">No events available</p>
                 <Link to="/admin">

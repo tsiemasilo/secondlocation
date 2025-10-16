@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Event, CreateEventInput } from "@/types/event";
+import { fetchSouthAfricanEvents } from "@/services/ticketmaster";
 
 interface EventContextType {
   events: Event[];
@@ -7,11 +8,13 @@ interface EventContextType {
   addEvent: (event: CreateEventInput) => void;
   toggleLike: (eventId: string) => void;
   removeEvent: (eventId: string) => void;
+  isLoading: boolean;
 }
 
 const EventContext = createContext<EventContextType | undefined>(undefined);
 
 const STORAGE_KEY = "event_discovery_events";
+const LIKED_KEY = "event_discovery_liked";
 
 const mockEvents: Event[] = [
   {
@@ -77,21 +80,46 @@ const mockEvents: Event[] = [
 ];
 
 export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [events, setEvents] = useState<Event[]>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [likedEventIds, setLikedEventIds] = useState<Set<string>>(() => {
+    const stored = localStorage.getItem(LIKED_KEY);
     if (stored) {
       try {
-        return JSON.parse(stored);
+        return new Set(JSON.parse(stored));
       } catch {
-        return mockEvents;
+        return new Set();
       }
     }
-    return mockEvents;
+    return new Set();
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
-  }, [events]);
+    const loadEvents = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedEvents = await fetchSouthAfricanEvents();
+        
+        const eventsWithLikedStatus = fetchedEvents.map(event => ({
+          ...event,
+          liked: likedEventIds.has(event.id),
+        }));
+        
+        setEvents(eventsWithLikedStatus);
+      } catch (error) {
+        console.error("Failed to fetch events, using mock data:", error);
+        setEvents(mockEvents);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(LIKED_KEY, JSON.stringify(Array.from(likedEventIds)));
+  }, [likedEventIds]);
 
   const likedEvents = events.filter((event) => event.liked);
 
@@ -110,14 +138,29 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         event.id === eventId ? { ...event, liked: !event.liked } : event
       )
     );
+    
+    setLikedEventIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(eventId)) {
+        newSet.delete(eventId);
+      } else {
+        newSet.add(eventId);
+      }
+      return newSet;
+    });
   };
 
   const removeEvent = (eventId: string) => {
     setEvents((prev) => prev.filter((event) => event.id !== eventId));
+    setLikedEventIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(eventId);
+      return newSet;
+    });
   };
 
   return (
-    <EventContext.Provider value={{ events, likedEvents, addEvent, toggleLike, removeEvent }}>
+    <EventContext.Provider value={{ events, likedEvents, addEvent, toggleLike, removeEvent, isLoading }}>
       {children}
     </EventContext.Provider>
   );

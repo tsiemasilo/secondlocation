@@ -15,4 +15,7 @@ export default defineConfig(() => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    'import.meta.env.VITE_TICKETMASTER_API_KEY': JSON.stringify(process.env.TICKETMASTER_API_KEY),
+  },
 }));
