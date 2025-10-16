@@ -1,7 +1,7 @@
 import { Event } from "@/types/event";
 
 const FOURSQUARE_API_KEY = import.meta.env.VITE_FOURSQUARE_API_KEY;
-const BASE_URL = "https://api.foursquare.com/v3/places";
+const BASE_URL = "https://places-api.foursquare.com/places";
 
 interface FoursquareVenue {
   fsq_id: string;
@@ -41,7 +41,42 @@ interface FoursquareResponse {
 
 const USD_TO_ZAR_RATE = 18.5;
 
-function transformFoursquareVenue(venue: FoursquareVenue): Event {
+interface FoursquareVenueNew {
+  fsq_place_id?: string;
+  fsq_id?: string;
+  name: string;
+  description?: string;
+  location: {
+    formatted_address: string;
+    locality?: string;
+    region?: string;
+    country?: string;
+  };
+  latitude?: number;
+  longitude?: number;
+  geocodes?: {
+    main: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  categories: Array<{
+    id: number | string;
+    name: string;
+  }>;
+  photos?: Array<{
+    prefix: string;
+    suffix: string;
+    width: number;
+    height: number;
+  }>;
+  hours?: {
+    display: string;
+  };
+  price?: number;
+}
+
+function transformFoursquareVenue(venue: FoursquareVenue | FoursquareVenueNew): Event {
   const location = venue.location.formatted_address || 
     `${venue.location.locality || ''}${venue.location.region ? ', ' + venue.location.region : ''}`;
 
@@ -60,8 +95,10 @@ function transformFoursquareVenue(venue: FoursquareVenue): Event {
   dateTime.setDate(dateTime.getDate() + 1);
   dateTime.setHours(21, 0, 0, 0);
 
+  const venueId = (venue as any).fsq_place_id || (venue as any).fsq_id || 'unknown';
+  
   return {
-    id: `fsq_${venue.fsq_id}`,
+    id: `fsq_${venueId}`,
     name: venue.name,
     description: description,
     location: location,
@@ -103,7 +140,8 @@ export async function searchNightlifeVenues(params: {
     const response = await fetch(url, {
       headers: {
         "Accept": "application/json",
-        "Authorization": FOURSQUARE_API_KEY,
+        "Authorization": `Bearer ${FOURSQUARE_API_KEY}`,
+        "Fsq-Api-Version": "2025-01-01",
       },
     });
 

@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions';
 
 const FOURSQUARE_API_KEY = process.env.VITE_FOURSQUARE_API_KEY;
-const BASE_URL = "https://api.foursquare.com/v3/places";
+const BASE_URL = "https://places-api.foursquare.com/places";
 
 export const handler: Handler = async (event) => {
   const headers = {
@@ -57,7 +57,8 @@ export const handler: Handler = async (event) => {
       const response = await fetch(url, {
         headers: {
           "Accept": "application/json",
-          "Authorization": FOURSQUARE_API_KEY,
+          "Authorization": `Bearer ${FOURSQUARE_API_KEY}`,
+          "Fsq-Api-Version": "2025-01-01",
         },
       });
 
