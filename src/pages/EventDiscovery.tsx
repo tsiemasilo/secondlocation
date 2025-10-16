@@ -4,26 +4,30 @@ import { useEvents } from "@/contexts/EventContext";
 import { Event } from "@/types/event";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Heart, X, Calendar, MapPin, DollarSign, Menu } from "lucide-react";
+import { Heart, Calendar, MapPin, DollarSign, Menu } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
 const EventDiscovery = () => {
   const { events, toggleLike, likedEvents, isLoading } = useEvents();
   const [currentIndex, setCurrentIndex] = useState(events.length - 1);
+  const [showHeart, setShowHeart] = useState<string | null>(null);
   const currentIndexRef = useRef(currentIndex);
+  const lastTapRef = useRef<number>(0);
+
+  const orderedEvents = useMemo(() => [...events].reverse(), [events]);
 
   useEffect(() => {
-    setCurrentIndex(events.length - 1);
-    currentIndexRef.current = events.length - 1;
-  }, [events.length]);
+    setCurrentIndex(orderedEvents.length - 1);
+    currentIndexRef.current = orderedEvents.length - 1;
+  }, [orderedEvents.length]);
 
   const childRefs = useMemo(
     () =>
-      Array(events.length)
+      Array(orderedEvents.length)
         .fill(0)
         .map(() => createRef<any>()),
-    [events.length]
+    [orderedEvents.length]
   );
 
   const updateCurrentIndex = (val: number) => {
@@ -37,7 +41,7 @@ const EventDiscovery = () => {
     if (direction === "right") {
       toggleLike(eventId);
     }
-    updateCurrentIndex(index - 1);
+    updateCurrentIndex(currentIndex - 1);
   };
 
   const outOfFrame = (name: string, idx: number) => {
@@ -45,9 +49,26 @@ const EventDiscovery = () => {
   };
 
   const swipe = async (dir: string) => {
-    if (canSwipe && currentIndex < events.length) {
+    if (canSwipe && currentIndex < orderedEvents.length) {
       await childRefs[currentIndex].current.swipe(dir);
     }
+  };
+
+  const handleDoubleTap = (eventId: string) => {
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
+      toggleLike(eventId);
+      setShowHeart(eventId);
+      
+      setTimeout(() => {
+        setShowHeart(null);
+        swipe("right");
+      }, 800);
+    }
+    
+    lastTapRef.current = now;
   };
 
   return (
@@ -125,7 +146,7 @@ const EventDiscovery = () => {
                 <p className="text-xl mb-4">Loading events...</p>
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto"></div>
               </div>
-            ) : events.length === 0 ? (
+            ) : orderedEvents.length === 0 ? (
               <div className="text-center text-gray-400">
                 <p className="text-xl mb-4">No events available</p>
                 <Link to="/admin">
@@ -138,7 +159,7 @@ const EventDiscovery = () => {
                 <p className="text-sm">Check your liked events or create new ones.</p>
               </div>
             ) : (
-              events.map((event, index) => (
+              orderedEvents.map((event, index) => (
                 <TinderCard
                   ref={childRefs[index]}
                   className="absolute w-full max-w-md"
@@ -146,6 +167,8 @@ const EventDiscovery = () => {
                   onSwipe={(dir) => swiped(dir, event.id, index)}
                   onCardLeftScreen={() => outOfFrame(event.name, index)}
                   preventSwipe={["up", "down"]}
+                  swipeRequirementType="position"
+                  swipeThreshold={100}
                 >
                   <div
                     className="relative w-full h-[600px] bg-gray-800 rounded-2xl shadow-2xl overflow-hidden cursor-grab active:cursor-grabbing"
@@ -154,8 +177,14 @@ const EventDiscovery = () => {
                       backgroundSize: "cover",
                       backgroundPosition: "center",
                     }}
+                    onClick={() => handleDoubleTap(event.id)}
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                    {showHeart === event.id && (
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                        <Heart className="w-32 h-32 text-white fill-white heart-pop" />
+                      </div>
+                    )}
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                       <h2 className="text-3xl font-bold mb-2">{event.name}</h2>
                       <p className="text-gray-200 mb-4 line-clamp-2">{event.description}</p>
@@ -179,27 +208,6 @@ const EventDiscovery = () => {
               ))
             )}
           </div>
-
-          {canSwipe && (
-            <div className="flex gap-8 mt-8">
-              <Button
-                onClick={() => swipe("left")}
-                size="lg"
-                variant="outline"
-                className="rounded-full w-16 h-16 p-0 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-              >
-                <X className="w-8 h-8" />
-              </Button>
-              <Button
-                onClick={() => swipe("right")}
-                size="lg"
-                variant="outline"
-                className="rounded-full w-16 h-16 p-0 border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
-              >
-                <Heart className="w-8 h-8" />
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </div>
