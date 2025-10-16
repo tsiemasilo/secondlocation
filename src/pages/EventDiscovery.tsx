@@ -95,7 +95,7 @@ const EventDiscovery = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <DollarSign className="w-4 h-4" />
-                            ${event.price}
+                            R{event.price}
                           </div>
                         </div>
                       </div>
@@ -160,7 +160,7 @@ const EventDiscovery = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           <DollarSign className="w-5 h-5" />
-                          <span className="text-2xl font-bold">${event.price}</span>
+                          <span className="text-2xl font-bold">R{event.price}</span>
                         </div>
                       </div>
                     </div>
