@@ -55,9 +55,15 @@ After deployment, you need to add your environment variables:
 
 2. Navigate to "Environment variables" section
 
-3. Add the following variable:
+3. Add the following variables:
    - **Key:** `VITE_TICKETMASTER_API_KEY`
    - **Value:** Your Ticketmaster API key
+   
+   - **Key:** `DATABASE_URL`
+   - **Value:** Your PostgreSQL database connection string
+   
+   - **Key:** `NETLIFY_DATABASE_URL`
+   - **Value:** Your production PostgreSQL database connection string (same as DATABASE_URL for Netlify)
 
 4. Trigger a redeploy for the changes to take effect
 
@@ -80,15 +86,52 @@ After deployment, you need to add your environment variables:
 - Redeploy after adding environment variables
 - Check that your API key is valid and has the correct permissions
 
+### Database Connection Issues
+- Verify DATABASE_URL and NETLIFY_DATABASE_URL are set correctly
+- Check that the database allows connections from Netlify's IP addresses
+- Look at function logs in Netlify dashboard for database errors
+- Ensure SSL mode is set to `require` in the connection string
+
+### Liked Events Not Persisting
+- Check that serverless functions are deployed (should be in `/.netlify/functions/`)
+- Verify database environment variables are set
+- Check browser console for API errors
+- Test the API endpoint: `/.netlify/functions/liked-events`
+
 ### Routing Issues
 - The `_redirects` file in the `public` folder handles SPA routing
 - All routes redirect to `index.html` for client-side routing
+- API routes (`/api/*`) redirect to Netlify functions
+
+## Database Setup
+
+This app uses PostgreSQL to store liked events. The database schema is automatically managed using Drizzle ORM.
+
+### Local Development Database
+
+1. Make sure your `DATABASE_URL` environment variable is set in Replit Secrets
+2. The database schema is already pushed to your development database
+
+### Production Database
+
+1. Add your `NETLIFY_DATABASE_URL` to Netlify environment variables
+2. The serverless functions will automatically use this connection string
+3. No migration needed - the schema is already set up
+
+### Database Schema
+
+The app uses two tables:
+- `liked_events` - Stores user's liked events
+- `user_preferences` - Stores user preferences (future feature)
 
 ## Files Created for Deployment
 
-- `netlify.toml` - Netlify configuration
+- `netlify.toml` - Netlify configuration with functions support
+- `netlify/functions/` - Serverless API endpoints
 - `public/_redirects` - SPA routing configuration
 - `.env.example` - Example environment variables
+- `drizzle.config.ts` - Database configuration
+- `src/db/` - Database schema and connection
 - `DEPLOYMENT.md` - This deployment guide
 
 ## Custom Domain
