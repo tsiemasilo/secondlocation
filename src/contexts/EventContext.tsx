@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
 import { Event, CreateEventInput } from "@/types/event";
 import { fetchSouthAfricanEvents } from "@/services/ticketmaster";
 import { fetchSouthAfricanEventbriteEvents } from "@/services/eventbrite";
@@ -8,19 +8,46 @@ import { fetchComputicketEvents } from "@/services/computicket";
 import { fetchGooglePlaces } from "@/services/googlePlaces";
 import { getLikedEvents, addLikedEvent, removeLikedEvent } from "@/services/database";
 
+export interface FilterOptions {
+  categories: string[];
+  priceRange: { min: number; max: number };
+  dateRange: { start: Date | null; end: Date | null };
+  popularity: number;
+  locationRadius: number;
+  userLocation: { lat: number; lng: number } | null;
+}
+
+export type SortOption = 'date-asc' | 'date-desc' | 'price-asc' | 'price-desc' | 'popularity' | 'distance';
+
 interface EventContextType {
+  allEvents: Event[];
   events: Event[];
   likedEvents: Event[];
   addEvent: (event: CreateEventInput) => void;
   toggleLike: (eventId: string) => void;
   removeEvent: (eventId: string) => void;
   isLoading: boolean;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  filters: FilterOptions;
+  setFilters: (filters: FilterOptions) => void;
+  sortOption: SortOption;
+  setSortOption: (option: SortOption) => void;
+  searchSuggestions: string[];
 }
 
 const EventContext = createContext<EventContextType | undefined>(undefined);
 
-const STORAGE_KEY = "event_discovery_events";
 const LIKED_KEY = "event_discovery_liked";
+
+const DEFAULT_FILTERS: FilterOptions = {
+  categories: [],
+  priceRange: { min: 0, max: 10000 },
+  dateRange: { start: null, end: null },
+  popularity: 0,
+  locationRadius: 50,
+  userLocation: null,
+};
 
 const mockEvents: Event[] = [
   {
@@ -32,6 +59,7 @@ const mockEvents: Event[] = [
     dateTime: "2025-07-15T18:00:00",
     imageUrl: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&h=600&fit=crop",
     liked: false,
+    category: "music",
   },
   {
     id: "2",
@@ -42,6 +70,7 @@ const mockEvents: Event[] = [
     dateTime: "2025-08-20T09:00:00",
     imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop",
     liked: false,
+    category: "event",
   },
   {
     id: "3",
@@ -52,6 +81,7 @@ const mockEvents: Event[] = [
     dateTime: "2025-09-10T17:00:00",
     imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop",
     liked: false,
+    category: "festival",
   },
   {
     id: "4",
@@ -62,6 +92,7 @@ const mockEvents: Event[] = [
     dateTime: "2025-06-25T19:00:00",
     imageUrl: "https://images.unsplash.com/photo-1531058020387-3be344556be6?w=800&h=600&fit=crop",
     liked: false,
+    category: "event",
   },
   {
     id: "5",
@@ -72,6 +103,7 @@ const mockEvents: Event[] = [
     dateTime: "2025-10-05T07:00:00",
     imageUrl: "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800&h=600&fit=crop",
     liked: false,
+    category: "sports",
   },
   {
     id: "6",
@@ -82,12 +114,28 @@ const mockEvents: Event[] = [
     dateTime: "2025-07-30T20:00:00",
     imageUrl: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?w=800&h=600&fit=crop",
     liked: false,
+    category: "comedy",
   },
 ];
 
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
 export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [allEvents, setAllEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTERS);
+  const [sortOption, setSortOption] = useState<SortOption>('date-asc');
   const [likedEventIds, setLikedEventIds] = useState<Set<string>>(() => {
     const stored = localStorage.getItem(LIKED_KEY);
     if (stored) {
@@ -139,10 +187,10 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           liked: likedIds.has(event.id),
         }));
         
-        setEvents(eventsWithLikedStatus);
+        setAllEvents(eventsWithLikedStatus);
       } catch (error) {
         console.error("Failed to fetch events, using mock data:", error);
-        setEvents(mockEvents);
+        setAllEvents(mockEvents);
       } finally {
         setIsLoading(false);
       }
@@ -155,7 +203,124 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     localStorage.setItem(LIKED_KEY, JSON.stringify(Array.from(likedEventIds)));
   }, [likedEventIds]);
 
-  const likedEvents = events.filter((event) => event.liked);
+  const filteredAndSortedEvents = useMemo(() => {
+    let result = [...allEvents];
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(event => 
+        event.name.toLowerCase().includes(query) ||
+        event.description.toLowerCase().includes(query) ||
+        event.location.toLowerCase().includes(query) ||
+        event.category?.toLowerCase().includes(query)
+      );
+    }
+
+    if (filters.categories.length > 0) {
+      result = result.filter(event => 
+        event.category && filters.categories.includes(event.category)
+      );
+    }
+
+    result = result.filter(event => 
+      event.price >= filters.priceRange.min && event.price <= filters.priceRange.max
+    );
+
+    if (filters.dateRange.start) {
+      result = result.filter(event => 
+        new Date(event.dateTime) >= filters.dateRange.start!
+      );
+    }
+
+    if (filters.dateRange.end) {
+      result = result.filter(event => 
+        new Date(event.dateTime) <= filters.dateRange.end!
+      );
+    }
+
+    if (filters.popularity > 0) {
+      result = result.filter(event => 
+        (event.popularity || 0) >= filters.popularity
+      );
+    }
+
+    if (filters.userLocation && filters.locationRadius > 0) {
+      result = result.filter(event => {
+        if (!event.coordinates) return true;
+        const distance = calculateDistance(
+          filters.userLocation!.lat,
+          filters.userLocation!.lng,
+          event.coordinates.lat,
+          event.coordinates.lng
+        );
+        return distance <= filters.locationRadius;
+      });
+    }
+
+    switch (sortOption) {
+      case 'date-asc':
+        result.sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+        break;
+      case 'date-desc':
+        result.sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
+        break;
+      case 'price-asc':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'popularity':
+        result.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+        break;
+      case 'distance':
+        if (filters.userLocation) {
+          result.sort((a, b) => {
+            if (!a.coordinates) return 1;
+            if (!b.coordinates) return -1;
+            const distA = calculateDistance(
+              filters.userLocation!.lat,
+              filters.userLocation!.lng,
+              a.coordinates.lat,
+              a.coordinates.lng
+            );
+            const distB = calculateDistance(
+              filters.userLocation!.lat,
+              filters.userLocation!.lng,
+              b.coordinates.lat,
+              b.coordinates.lng
+            );
+            return distA - distB;
+          });
+        }
+        break;
+    }
+
+    return result;
+  }, [allEvents, searchQuery, filters, sortOption]);
+
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    
+    const query = searchQuery.toLowerCase();
+    const suggestions = new Set<string>();
+    
+    allEvents.forEach(event => {
+      if (event.name.toLowerCase().includes(query)) {
+        suggestions.add(event.name);
+      }
+      if (event.category && event.category.toLowerCase().includes(query)) {
+        suggestions.add(event.category);
+      }
+      if (event.location.toLowerCase().includes(query)) {
+        suggestions.add(event.location);
+      }
+    });
+    
+    return Array.from(suggestions).slice(0, 5);
+  }, [allEvents, searchQuery]);
+
+  const likedEvents = allEvents.filter((event) => event.liked);
 
   const addEvent = (eventInput: CreateEventInput) => {
     const newEvent: Event = {
@@ -163,16 +328,16 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       id: Date.now().toString(),
       liked: false,
     };
-    setEvents((prev) => [...prev, newEvent]);
+    setAllEvents((prev) => [...prev, newEvent]);
   };
 
   const toggleLike = async (eventId: string) => {
-    const event = events.find(e => e.id === eventId);
+    const event = allEvents.find(e => e.id === eventId);
     if (!event) return;
 
     const wasLiked = likedEventIds.has(eventId);
     
-    setEvents((prev) =>
+    setAllEvents((prev) =>
       prev.map((e) =>
         e.id === eventId ? { ...e, liked: !e.liked } : e
       )
@@ -196,7 +361,7 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
     } catch (error) {
       console.error("Failed to sync like status to database:", error);
-      setEvents((prev) =>
+      setAllEvents((prev) =>
         prev.map((e) =>
           e.id === eventId ? { ...e, liked: wasLiked } : e
         )
@@ -214,7 +379,7 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const removeEvent = (eventId: string) => {
-    setEvents((prev) => prev.filter((event) => event.id !== eventId));
+    setAllEvents((prev) => prev.filter((event) => event.id !== eventId));
     setLikedEventIds((prev) => {
       const newSet = new Set(prev);
       newSet.delete(eventId);
@@ -223,7 +388,22 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   return (
-    <EventContext.Provider value={{ events, likedEvents, addEvent, toggleLike, removeEvent, isLoading }}>
+    <EventContext.Provider value={{ 
+      allEvents,
+      events: filteredAndSortedEvents, 
+      likedEvents, 
+      addEvent, 
+      toggleLike, 
+      removeEvent, 
+      isLoading,
+      searchQuery,
+      setSearchQuery,
+      filters,
+      setFilters,
+      sortOption,
+      setSortOption,
+      searchSuggestions,
+    }}>
       {children}
     </EventContext.Provider>
   );

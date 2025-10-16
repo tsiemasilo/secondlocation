@@ -7,9 +7,25 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Heart, Calendar, MapPin, DollarSign, Menu } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
+import { FilterBar } from "@/components/FilterBar";
+import { SearchBar } from "@/components/SearchBar";
+import { SortControls } from "@/components/SortControls";
 
 const EventDiscovery = () => {
-  const { events, toggleLike, likedEvents, isLoading } = useEvents();
+  const { 
+    events, 
+    toggleLike, 
+    likedEvents, 
+    isLoading,
+    searchQuery,
+    setSearchQuery,
+    filters,
+    setFilters,
+    sortOption,
+    setSortOption,
+    searchSuggestions,
+  } = useEvents();
+  
   const [currentIndex, setCurrentIndex] = useState(events.length - 1);
   const [showHeart, setShowHeart] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -22,6 +38,7 @@ const EventDiscovery = () => {
   useEffect(() => {
     setCurrentIndex(orderedEvents.length - 1);
     currentIndexRef.current = orderedEvents.length - 1;
+    setAlreadyRemoved([]);
   }, [orderedEvents.length]);
 
   const childRefs = useMemo(
@@ -145,6 +162,32 @@ const EventDiscovery = () => {
           </div>
         </div>
 
+        <div className="mb-6 space-y-4">
+          <div className="flex gap-4 items-center">
+            <div className="flex-1">
+              <SearchBar 
+                value={searchQuery}
+                onChange={setSearchQuery}
+                suggestions={searchSuggestions}
+              />
+            </div>
+            <FilterBar 
+              filters={filters}
+              onFiltersChange={setFilters}
+            />
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <SortControls 
+              value={sortOption}
+              onChange={setSortOption}
+            />
+            <p className="text-sm text-gray-400">
+              Showing {orderedEvents.length} event{orderedEvents.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+        </div>
+
         <div className="flex flex-col items-center justify-center">
           <div className="relative w-full max-w-md h-[600px] flex items-center justify-center">
             {isLoading ? (
@@ -154,7 +197,8 @@ const EventDiscovery = () => {
               </div>
             ) : orderedEvents.length === 0 ? (
               <div className="text-center text-gray-400">
-                <p className="text-xl mb-4">No events available</p>
+                <p className="text-xl mb-4">No events match your filters</p>
+                <p className="text-sm mb-4">Try adjusting your search or filters</p>
                 <Link to="/admin">
                   <Button>Create an Event</Button>
                 </Link>
@@ -162,7 +206,7 @@ const EventDiscovery = () => {
             ) : currentIndex < 0 ? (
               <div className="text-center text-gray-400">
                 <p className="text-xl mb-4">No more events!</p>
-                <p className="text-sm">Check your liked events or create new ones.</p>
+                <p className="text-sm">Check your liked events or adjust your filters.</p>
               </div>
             ) : (
               orderedEvents
@@ -194,6 +238,13 @@ const EventDiscovery = () => {
                       </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                      {event.category && (
+                        <div className="mb-2">
+                          <span className="inline-block px-3 py-1 bg-blue-500/80 rounded-full text-xs font-semibold uppercase">
+                            {event.category}
+                          </span>
+                        </div>
+                      )}
                       <h2 className="text-3xl font-bold mb-2">{event.name}</h2>
                       <p className="text-gray-200 mb-4 line-clamp-2">{event.description}</p>
                       <div className="space-y-2">
