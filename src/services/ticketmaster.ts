@@ -141,34 +141,7 @@ export async function fetchSouthAfricanEvents(): Promise<Event[]> {
     console.log("Unique events:", uniqueByName.map(e => e.name));
     
     if (uniqueByName.length > 0) {
-      if (uniqueByName.length < 10) {
-        console.log("Limited unique events in South Africa, fetching additional global events...");
-        const globalEvents = await fetchEvents({
-          countryCode: "US",
-          size: 50,
-        });
-        
-        console.log(`Fetched ${globalEvents.length} global events`);
-        
-        const uniqueGlobalByNameAndDate = Array.from(
-          new Map(globalEvents.map(event => [`${event.name}|${event.dateTime}`, event])).values()
-        );
-        
-        const uniqueGlobalByName = Array.from(
-          new Map(uniqueGlobalByNameAndDate.map(event => [event.name, event])).values()
-        );
-        
-        console.log(`${uniqueGlobalByName.length} unique global events`);
-        
-        const combinedEvents = [...uniqueByName, ...uniqueGlobalByName];
-        const allUniqueEvents = Array.from(
-          new Map(combinedEvents.map(event => [event.name, event])).values()
-        );
-        
-        console.log(`Returning ${allUniqueEvents.length} total unique events (${uniqueByName.length} from ZA, ${allUniqueEvents.length - uniqueByName.length} new from global)`);
-        return allUniqueEvents.slice(0, 20);
-      }
-      
+      console.log(`Returning ${uniqueByName.length} South African events only`);
       return uniqueByName;
     }
     
