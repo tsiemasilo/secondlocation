@@ -34,6 +34,8 @@ interface EventContextType {
   sortOption: SortOption;
   setSortOption: (option: SortOption) => void;
   searchSuggestions: string[];
+  selectedCity: string;
+  setSelectedCity: (city: string) => void;
 }
 
 const EventContext = createContext<EventContextType | undefined>(undefined);
@@ -136,6 +138,7 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterOptions>(DEFAULT_FILTERS);
   const [sortOption, setSortOption] = useState<SortOption>('date-asc');
+  const [selectedCity, setSelectedCity] = useState<string>("");
   const [likedEventIds, setLikedEventIds] = useState<Set<string>>(() => {
     const stored = localStorage.getItem(LIKED_KEY);
     if (stored) {
@@ -211,6 +214,12 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const filteredAndSortedEvents = useMemo(() => {
     let result = [...allEvents];
+
+    if (selectedCity.trim()) {
+      result = result.filter(event => 
+        event.location.toLowerCase().includes(selectedCity.toLowerCase())
+      );
+    }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -303,7 +312,7 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
 
     return result;
-  }, [allEvents, searchQuery, filters, sortOption]);
+  }, [allEvents, searchQuery, filters, sortOption, selectedCity]);
 
   const searchSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -409,6 +418,8 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       sortOption,
       setSortOption,
       searchSuggestions,
+      selectedCity,
+      setSelectedCity,
     }}>
       {children}
     </EventContext.Provider>
