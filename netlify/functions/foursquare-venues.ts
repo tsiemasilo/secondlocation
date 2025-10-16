@@ -32,14 +32,15 @@ export const handler: Handler = async (event) => {
     }
 
     const queryParams = new URLSearchParams({
-      categories: "13032,13033,13035,13037",
-      limit: "30",
+      categories: "4bf58dd8d48988d11f941735,4bf58dd8d48988d116941735,4bf58dd8d48988d121941735,4bf58dd8d48988d11e941735",
+      limit: "50",
     });
 
     const cities = [
-      { lat: -33.9249, lng: 18.4241 },
-      { lat: -26.2041, lng: 28.0473 },
-      { lat: -29.8587, lng: 31.0218 },
+      { name: 'Cape Town', lat: -33.9249, lng: 18.4241, radius: 15000 },
+      { name: 'Johannesburg', lat: -26.2041, lng: 28.0473, radius: 15000 },
+      { name: 'Durban', lat: -29.8587, lng: 31.0218, radius: 15000 },
+      { name: 'Pretoria', lat: -25.7479, lng: 28.2293, radius: 15000 },
     ];
 
     const allVenues: any[] = [];
@@ -47,9 +48,11 @@ export const handler: Handler = async (event) => {
     for (const city of cities) {
       const params = new URLSearchParams(queryParams);
       params.append("ll", `${city.lat},${city.lng}`);
-      params.append("radius", "10000");
+      params.append("radius", city.radius.toString());
 
       const url = `${BASE_URL}/search?${params.toString()}`;
+
+      console.log(`Searching Foursquare in ${city.name}...`);
 
       const response = await fetch(url, {
         headers: {
@@ -60,11 +63,17 @@ export const handler: Handler = async (event) => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log(`Found ${data.results?.length || 0} venues in ${city.name}`);
         if (data.results) {
           allVenues.push(...data.results);
         }
+      } else {
+        const errorText = await response.text();
+        console.error(`Foursquare API error for ${city.name}:`, response.status, errorText);
       }
     }
+
+    console.log(`Total venues found: ${allVenues.length}`);
 
     return {
       statusCode: 200,
