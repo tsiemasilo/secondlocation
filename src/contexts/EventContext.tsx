@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Event, CreateEventInput } from "@/types/event";
 import { fetchSouthAfricanEvents } from "@/services/ticketmaster";
+import { getLikedEvents, addLikedEvent, removeLikedEvent } from "@/services/database";
 
 interface EventContextType {
   events: Event[];
@@ -98,11 +99,18 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const loadEvents = async () => {
       try {
         setIsLoading(true);
-        const fetchedEvents = await fetchSouthAfricanEvents();
+        
+        const [fetchedEvents, likedEventsFromDb] = await Promise.all([
+          fetchSouthAfricanEvents(),
+          getLikedEvents().catch(() => []),
+        ]);
+        
+        const likedIds = new Set(likedEventsFromDb.map(e => e.id));
+        setLikedEventIds(likedIds);
         
         const eventsWithLikedStatus = fetchedEvents.map(event => ({
           ...event,
-          liked: likedEventIds.has(event.id),
+          liked: likedIds.has(event.id),
         }));
         
         setEvents(eventsWithLikedStatus);
@@ -132,22 +140,51 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setEvents((prev) => [...prev, newEvent]);
   };
 
-  const toggleLike = (eventId: string) => {
+  const toggleLike = async (eventId: string) => {
+    const event = events.find(e => e.id === eventId);
+    if (!event) return;
+
+    const wasLiked = likedEventIds.has(eventId);
+    
     setEvents((prev) =>
-      prev.map((event) =>
-        event.id === eventId ? { ...event, liked: !event.liked } : event
+      prev.map((e) =>
+        e.id === eventId ? { ...e, liked: !e.liked } : e
       )
     );
     
     setLikedEventIds((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(eventId)) {
+      if (wasLiked) {
         newSet.delete(eventId);
       } else {
         newSet.add(eventId);
       }
       return newSet;
     });
+
+    try {
+      if (wasLiked) {
+        await removeLikedEvent(eventId);
+      } else {
+        await addLikedEvent(event);
+      }
+    } catch (error) {
+      console.error("Failed to sync like status to database:", error);
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === eventId ? { ...e, liked: wasLiked } : e
+        )
+      );
+      setLikedEventIds((prev) => {
+        const newSet = new Set(prev);
+        if (wasLiked) {
+          newSet.add(eventId);
+        } else {
+          newSet.delete(eventId);
+        }
+        return newSet;
+      });
+    }
   };
 
   const removeEvent = (eventId: string) => {
