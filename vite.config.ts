@@ -8,6 +8,12 @@ export default defineConfig(() => ({
     host: "0.0.0.0",
     port: 5000,
     allowedHosts: true as const,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [dyadComponentTagger(), react()],
   resolve: {
@@ -21,5 +27,6 @@ export default defineConfig(() => ({
     'import.meta.env.VITE_TICKETMASTER_API_KEY': JSON.stringify(process.env.VITE_TICKETMASTER_API_KEY),
     'import.meta.env.VITE_FOURSQUARE_API_KEY': JSON.stringify(process.env.VITE_FOURSQUARE_API_KEY),
     'import.meta.env.VITE_YELP_API_KEY': JSON.stringify(process.env.VITE_YELP_API_KEY),
+    'import.meta.env.VITE_GOOGLE_PLACES_API_KEY': JSON.stringify(process.env.VITE_GOOGLE_PLACES_API_KEY),
   },
 }));
