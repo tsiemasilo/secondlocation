@@ -4,7 +4,12 @@ This is an event discovery platform built with React, TypeScript, and Vite. The 
 
 **Recent Rebuild (Oct 14, 2025)**: Completely rebuilt from a calculator app to an event discovery platform with swipe functionality, localStorage persistence, and admin capabilities.
 
-**Latest Update (Oct 16, 2025)**: Integrated Ticketmaster API for real live events and changed currency from USD to South African Rands (ZAR).
+**Latest Update (Oct 16, 2025)**: 
+- Integrated Ticketmaster API for real live events
+- Changed currency from USD to South African Rands (ZAR)
+- Added PostgreSQL database integration with Drizzle ORM
+- Implemented Netlify serverless functions for database API
+- Liked events now persist in PostgreSQL (dev and production databases)
 
 # User Preferences
 
@@ -28,7 +33,11 @@ Preferred communication style: Simple, everyday language.
 ## Data Management
 - **Event Context**: React Context API for centralized event state management
 - **Ticketmaster API**: Real-time event data from Ticketmaster Discovery API (5,000 free calls/day)
-- **localStorage Persistence**: Liked events persist across sessions using event IDs
+- **PostgreSQL Database**: Liked events stored in PostgreSQL with per-session persistence
+- **Database ORM**: Drizzle ORM for type-safe database queries
+- **Serverless API**: Netlify serverless functions for database CRUD operations
+- **Session Management**: Unique session IDs for multi-user support
+- **localStorage Fallback**: Graceful fallback to localStorage when database API unavailable
 - **Zod Validation**: Type-safe event schema validation
 - **Currency Handling**: Automatic USD to ZAR conversion (18.5 rate), with currency detection
 - **Fallback Data**: Mock events used if API fails to load
@@ -150,7 +159,9 @@ Events include:
 ✅ Like/unlike events functionality
 ✅ Liked events drawer
 ✅ Admin dashboard for creating events
-✅ localStorage persistence (liked events only)
+✅ **PostgreSQL database persistence** (liked events stored per-session)
+✅ **Netlify serverless functions** for database API
+✅ localStorage fallback when database unavailable
 ✅ Dark theme
 ✅ **Real live events from Ticketmaster API**
 ✅ **Prices displayed in South African Rands (ZAR)**
