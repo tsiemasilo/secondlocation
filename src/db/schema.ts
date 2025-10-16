@@ -1,12 +1,14 @@
-import { pgTable, text, timestamp, uuid, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, jsonb, unique } from 'drizzle-orm/pg-core';
 
 export const likedEvents = pgTable('liked_events', {
   id: uuid('id').primaryKey().defaultRandom(),
-  eventId: text('event_id').notNull().unique(),
+  eventId: text('event_id').notNull(),
   eventData: jsonb('event_data').notNull(),
   likedAt: timestamp('liked_at').defaultNow().notNull(),
-  sessionId: text('session_id'),
-});
+  sessionId: text('session_id').notNull(),
+}, (table) => ({
+  uniqueSessionEvent: unique().on(table.sessionId, table.eventId),
+}));
 
 export const userPreferences = pgTable('user_preferences', {
   id: uuid('id').primaryKey().defaultRandom(),

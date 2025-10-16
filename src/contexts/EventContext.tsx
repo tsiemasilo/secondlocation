@@ -100,13 +100,20 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       try {
         setIsLoading(true);
         
-        const [fetchedEvents, likedEventsFromDb] = await Promise.all([
-          fetchSouthAfricanEvents(),
-          getLikedEvents().catch(() => []),
-        ]);
+        const fetchedEvents = await fetchSouthAfricanEvents();
         
-        const likedIds = new Set(likedEventsFromDb.map(e => e.id));
-        setLikedEventIds(likedIds);
+        const likedEventsFromDb = await getLikedEvents().catch((error) => {
+          console.log("Database API not available, using localStorage fallback");
+          return null;
+        });
+        
+        const likedIds: Set<string> = likedEventsFromDb 
+          ? new Set(likedEventsFromDb.map(e => e.id))
+          : likedEventIds;
+        
+        if (likedEventsFromDb) {
+          setLikedEventIds(likedIds);
+        }
         
         const eventsWithLikedStatus = fetchedEvents.map(event => ({
           ...event,

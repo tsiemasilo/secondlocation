@@ -2,7 +2,7 @@ import { Handler } from '@netlify/functions';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { likedEvents } from '../../src/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 const getDatabaseUrl = () => {
   return process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL;
@@ -49,7 +49,11 @@ export const handler: Handler = async (event) => {
     if (event.httpMethod === 'POST') {
       const { eventId, eventData } = JSON.parse(event.body || '{}');
       
-      const existing = await db.select().from(likedEvents).where(eq(likedEvents.eventId, eventId));
+      const existing = await db.select().from(likedEvents)
+        .where(and(
+          eq(likedEvents.eventId, eventId),
+          eq(likedEvents.sessionId, sessionId)
+        ));
       
       if (existing.length > 0) {
         return {
@@ -75,7 +79,11 @@ export const handler: Handler = async (event) => {
     if (event.httpMethod === 'DELETE') {
       const eventId = event.path.split('/').pop();
       
-      await db.delete(likedEvents).where(eq(likedEvents.eventId, eventId!));
+      await db.delete(likedEvents)
+        .where(and(
+          eq(likedEvents.eventId, eventId!),
+          eq(likedEvents.sessionId, sessionId)
+        ));
 
       return {
         statusCode: 204,
