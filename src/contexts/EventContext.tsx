@@ -169,8 +169,14 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         
         console.log(`Total unique events: ${uniqueEvents.length} (${ticketmasterEvents.length} from Ticketmaster, ${eventbriteEvents.length} from Eventbrite, ${foursquareVenues.length} from Foursquare, ${yelpEvents.length} from Yelp, ${computicketEvents.length} from Computicket, ${googlePlaces.length} from Google Places)`);
         
-        const likedEventsFromDb = await getLikedEvents().catch((error) => {
-          console.log("Database API not available, using localStorage fallback");
+        const likedEventsFromDb = await Promise.race([
+          getLikedEvents(),
+          new Promise<null>((resolve) => setTimeout(() => {
+            console.log("Database timeout, using localStorage fallback");
+            resolve(null);
+          }, 2000))
+        ]).catch((error) => {
+          console.log("Error fetching liked events:", error);
           return null;
         });
         

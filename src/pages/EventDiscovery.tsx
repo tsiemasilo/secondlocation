@@ -1,29 +1,15 @@
 import { useState, useMemo, useRef, createRef, useEffect } from "react";
 import TinderCard from "react-tinder-card";
 import { useEvents } from "@/contexts/EventContext";
-import { Event } from "@/types/event";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Heart, Calendar, MapPin, DollarSign, Menu } from "lucide-react";
+import { Heart, Calendar, MapPin, DollarSign } from "lucide-react";
 import { format } from "date-fns";
-import { Link } from "react-router-dom";
-import { FilterBar } from "@/components/FilterBar";
-import { SearchBar } from "@/components/SearchBar";
-import { SortControls } from "@/components/SortControls";
+import { Navbar } from "@/components/Navbar";
 
 const EventDiscovery = () => {
   const { 
     events, 
     toggleLike, 
-    likedEvents, 
     isLoading,
-    searchQuery,
-    setSearchQuery,
-    filters,
-    setFilters,
-    sortOption,
-    setSortOption,
-    searchSuggestions,
   } = useEvents();
   
   const [currentIndex, setCurrentIndex] = useState(events.length - 1);
@@ -96,98 +82,15 @@ const EventDiscovery = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Discover Events</h1>
-          <div className="flex gap-4">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="relative">
-                  <Heart className="w-5 h-5 mr-2" />
-                  Liked Events
-                  {likedEvents.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
-                      {likedEvents.length}
-                    </span>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="bg-gray-900 border-gray-800">
-                <SheetHeader>
-                  <SheetTitle className="text-white">Liked Events</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6 space-y-4">
-                  {likedEvents.length === 0 ? (
-                    <p className="text-gray-400 text-center py-8">No liked events yet. Swipe right on events you like!</p>
-                  ) : (
-                    likedEvents.map((event) => (
-                      <div key={event.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                        <div className="flex justify-between items-start">
-                          <h3 className="font-semibold text-white">{event.name}</h3>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleLike(event.id)}
-                            className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                          >
-                            <Heart className="w-5 h-5 fill-current" />
-                          </Button>
-                        </div>
-                        <div className="mt-2 space-y-1 text-sm text-gray-400">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            {event.location}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            {format(new Date(event.dateTime), "PPP 'at' p")}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="w-4 h-4" />
-                            R{event.price}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
-            <Link to="/admin">
-              <Button variant="outline">
-                <Menu className="w-5 h-5 mr-2" />
-                Admin
-              </Button>
-            </Link>
-          </div>
-        </div>
+      <Navbar />
+      
+      <div className="fixed top-20 left-0 right-0 text-center pointer-events-none z-40">
+        <h1 className="text-8xl font-black text-white/10 tracking-wider">
+          DISCOVER EVENTS
+        </h1>
+      </div>
 
-        <div className="mb-6 space-y-4">
-          <div className="flex gap-4 items-center">
-            <div className="flex-1">
-              <SearchBar 
-                value={searchQuery}
-                onChange={setSearchQuery}
-                suggestions={searchSuggestions}
-              />
-            </div>
-            <FilterBar 
-              filters={filters}
-              onFiltersChange={setFilters}
-            />
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <SortControls 
-              value={sortOption}
-              onChange={setSortOption}
-            />
-            <p className="text-sm text-gray-400">
-              Showing {orderedEvents.length} event{orderedEvents.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
-
+      <div className="container mx-auto px-4 pt-40 pb-6">
         <div className="flex flex-col items-center justify-center">
           <div className="relative w-full max-w-md h-[600px] flex items-center justify-center">
             {isLoading ? (
@@ -199,9 +102,6 @@ const EventDiscovery = () => {
               <div className="text-center text-gray-400">
                 <p className="text-xl mb-4">No events match your filters</p>
                 <p className="text-sm mb-4">Try adjusting your search or filters</p>
-                <Link to="/admin">
-                  <Button>Create an Event</Button>
-                </Link>
               </div>
             ) : currentIndex < 0 ? (
               <div className="text-center text-gray-400">
